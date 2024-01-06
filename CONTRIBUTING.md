@@ -83,5 +83,3 @@ git commit -m "fix(homepage): fix typo on homepage in the faq section"
 ```
 
 It helps to be as descriptive as possible in commit messages so that users can be aware of the changes made by you.
-
-Finally, create a pull request to merge the changes on your forked repository to the original repository hosted on AmruthPillai/Reactive-Resume. I can take a look at the changes you've made when I have the time and have it merged onto the app.
