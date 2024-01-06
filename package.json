@@ -1,8 +1,7 @@
 {
   "name": "@death-resume/source",
   "description": "Resume builder that simplifies the process of creating, updating, and sharing your resume.",
-  "version": "4.0.3",
-  "license": "MIT",
+  "version": "1.0.0",
   "private": true,
   "author": {
     "name": "rafaelvmfranco"
