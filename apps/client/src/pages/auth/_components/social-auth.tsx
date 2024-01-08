@@ -10,16 +10,7 @@ export const SocialAuth = () => {
   if (!providers || providers.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {providers.includes("github") && (
-        <Button asChild size="lg" className="w-full !bg-[#222] !text-white hover:!bg-[#222]/80">
-          <a href="/api/auth/github">
-            <GithubLogo className="mr-3 h-4 w-4" />
-            {t`GitHub`}
-          </a>
-        </Button>
-      )}
-
+    <div className="flex align-center">
       {providers.includes("google") && (
         <Button
           asChild
