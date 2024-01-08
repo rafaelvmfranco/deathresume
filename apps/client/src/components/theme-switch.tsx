@@ -6,9 +6,11 @@ import { useMemo } from "react";
 
 type Props = {
   size?: number;
+  setLight?: boolean;
+
 };
 
-export const ThemeSwitch = ({ size = 20 }: Props) => {
+export const ThemeSwitch = ({ size = 20, setLight = false }: Props) => {
   const { theme, toggleTheme } = useTheme();
 
   const variants: Variants = useMemo(() => {
@@ -19,13 +21,18 @@ export const ThemeSwitch = ({ size = 20 }: Props) => {
     };
   }, [size]);
 
+  const colorStyle = {
+    variant: setLight ? "" : "ghost",
+    buttonClass: setLight ? "bg-violet hover:bg-violet" : ""
+  }
+
   return (
-    <Button size="icon" variant="ghost" onClick={toggleTheme}>
-      <div className="cursor-pointer overflow-hidden" style={{ width: size, height: size }}>
-        <motion.div animate={theme} variants={variants} className="flex">
+    <Button size="icon" variant={colorStyle.variant} onClick={toggleTheme} className={colorStyle.buttonClass}>
+      <div className="cursor-pointer overflow-hidden" style={{ width: size, height: size }} >
+        <motion.div animate={theme} variants={variants} className="flex" >
           <Sun size={size} className="shrink-0" />
-          <CloudSun size={size} className="shrink-0" />
-          <Moon size={size} className="shrink-0" />
+          <CloudSun size={size} className="shrink-0"/>
+          <Moon size={size} color="white" className="shrink-0"/>
         </motion.div>
       </div>
     </Button>
