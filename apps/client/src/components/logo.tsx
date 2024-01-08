@@ -3,29 +3,22 @@ import { cn } from "@reactive-resume/utils";
 
 type Props = {
   size?: number;
+  setLight?: boolean;
   className?: string;
 };
 
-export const Logo = ({ size = 32, className }: Props) => {
+export const Logo = ({ size = 32, setLight = false, className }: Props) => {
   const { isDarkMode } = useTheme();
 
-  let src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  let srcForMode = isDarkMode ? "src/assets/logos/logo-text-light.png" : "src/assets/logos/logo-text-bright.png" 
 
-  switch (isDarkMode) {
-    case false:
-      src = "/logo/light.svg";
-      break;
-    case true:
-      src = "/logo/dark.svg";
-      break;
-  }
-
+  if (setLight) srcForMode = "src/assets/logos/logo-text-light.png"
+  
   return (
     <img
-      src={src}
-      width={size}
-      height={size}
-      alt="Reactive Resume"
+      src={srcForMode}
+      style={{ width: '170px', height: 'auto', maxWidth: 'none' }}
+      alt="Death Resume"
       className={cn("rounded-sm", className)}
     />
   );
