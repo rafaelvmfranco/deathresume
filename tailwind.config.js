@@ -13,6 +13,9 @@ module.exports = {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        reddish: "#F11F56",
+        violet: "#270061",
+        lightViolet: "#E5E0EC",
         border: "hsl(var(--border))",
         primary: {
           DEFAULT: "hsl(var(--primary))",

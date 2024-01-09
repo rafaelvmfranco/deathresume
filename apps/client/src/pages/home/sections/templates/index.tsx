@@ -1,16 +1,29 @@
 import { t } from "@lingui/macro";
 import { templatesList } from "@reactive-resume/utils";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+
 
 export const TemplatesSection = () => (
-  <section id="sample-resumes" className="relative py-24 sm:py-32">
+  <section id="sample-resumes" className="relative py-24 sm:py-32 bg-violet text-white">
     <div className="container flex flex-col gap-12 lg:min-h-[600px] lg:flex-row lg:items-start">
       <div className="space-y-4 lg:mt-16 lg:basis-96">
-        <h2 className="text-4xl font-bold">{t`Templates`}</h2>
-
+        {/* add translations */}
+        <h2 className="text-4xl font-bold">Get your resume or be unemployed forever</h2>
+        {/* add translations */}
         <p className="leading-relaxed">
-          {t`Explore the templates available in Reactive Resume and view the resumes crafted with them. They could also serve as examples to help guide the creation of your next resume.`}
+          Beautiful ready-to-use resume templates.
         </p>
+        {/* add translations */}
+        <div className="pt-16">
+          <Link to="/dashboard/resumes">
+
+          <button className="bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-lg hover:opacity-80">
+            I want my resume
+          </button>
+          </Link>
+        </div>
+        
       </div>
 
       <div className="w-full overflow-hidden lg:absolute lg:right-0 lg:max-w-[55%]">

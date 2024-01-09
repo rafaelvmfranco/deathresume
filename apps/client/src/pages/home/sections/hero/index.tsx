@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { t } from "@lingui/macro";
 import { ArrowRight } from "@phosphor-icons/react";
 import { Badge, buttonVariants } from "@reactive-resume/ui";
@@ -7,70 +8,55 @@ import Tilt from "react-parallax-tilt";
 
 import { defaultTiltProps } from "@/client/constants/parallax-tilt";
 
-import { HeroCTA } from "./call-to-action";
 import { Decoration } from "./decoration";
+import { Header } from "../../components/header"
 
 export const HeroSection = () => (
-  <section id="hero" className="relative">
+  <section id="hero" className="bg-lightViolet dark:bg-black">
     <Decoration.Grid />
     <Decoration.Gradient />
-
-    <div className="mx-auto max-w-7xl px-6 lg:flex lg:h-screen lg:items-center lg:px-12">
+    <Header/>
+    <div className="mx-auto max-w-7xl  lg:flex lg:h-screen lg:items-center">
       <motion.div
-        className="mx-auto mt-32 max-w-3xl shrink-0 lg:mx-0 lg:mt-0 lg:max-w-xl lg:pt-8"
         viewport={{ once: true }}
         initial={{ opacity: 0, x: -100 }}
         whileInView={{ opacity: 1, x: 0 }}
       >
-        <div className="hidden items-center gap-x-4 sm:flex">
-          <Badge>{t`Version 4`}</Badge>
-
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://docs.rxresu.me/overview/features"
-            className={cn(buttonVariants({ variant: "link" }), "space-x-2 text-left")}
-          >
-            <p>{t`What's new in the latest version`}</p>
-            <ArrowRight />
-          </a>
+        
+        <div className="w-lvw px-12">
+         <img src="src/assets/logos/logo-big.png" alr="Rip Unemployment - Death Resume" className="w-full h-100 object-cover px-16"/> 
         </div>
-
-        <div className="mt-10 space-y-2">
-          <h6 className="text-base font-bold tracking-wide">{t`Finally,`}</h6>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-            {t`A free and open-source resume builder`}
+        
+        <div className="mt-10 space-y-2 text-center text-violet font-black">
+          <h1 className="text-5xl font-bold tracking-tight lg:text-7xl">
+            {/* translation */}
+            Murder your
+          </h1>
+          <h1 className="text-5xl font-bold tracking-tight lg:text-7xl">
+           {/* translation */}
+           unemployment
           </h1>
         </div>
 
-        <p className="prose prose-base prose-zinc mt-6 text-lg leading-8 dark:prose-invert">
-          {t`A free and open-source resume builder that simplifies the process of creating, updating, and sharing your resume.`}
-        </p>
+           {/* translation */}
+        <div className="text-violet mt-6 text-base text-center leading-8 dark:text-white">
+          <div>You have only one certainty in life: the death...</div>
+          <div>of yout unemployment if you get a resume with me</div>
 
-        <div className="mt-10 flex items-center gap-x-8">
-          <HeroCTA />
+        </div>
+        
+        {/* translation */}
+        <div className="pt-8 pb-20 flex justify-center">
+          <div>
+            <Link to="/dashboard/resumes">
+              <button className="bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-2xl hover:opacity-80">
+              Create my resume
+              </button>
+            </Link>
+          </div>
         </div>
       </motion.div>
 
-      <div className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-20">
-        <div className="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
-          <motion.div
-            viewport={{ once: true }}
-            initial={{ opacity: 0, x: 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-          >
-            <Tilt {...defaultTiltProps}>
-              <img
-                width={3600}
-                height={2078}
-                src="/screenshots/builder.jpg"
-                alt="Reactive Resume - Screenshot - Builder Screen"
-                className="w-[76rem] rounded-lg bg-background/5 shadow-2xl ring-1 ring-foreground/10"
-              />
-            </Tilt>
-          </motion.div>
-        </div>
-      </div>
     </div>
   </section>
 );
