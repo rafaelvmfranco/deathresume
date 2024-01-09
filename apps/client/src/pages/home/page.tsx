@@ -2,10 +2,12 @@ import { t } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
 import { Helmet } from "react-helmet-async";
 
-import { ContributorsSection } from "./sections/contributors";
+import { Header } from "./components/header";
 import { FAQSection } from "./sections/faq";
 import { FeaturesSection } from "./sections/features";
 import { HeroSection } from "./sections/hero";
+import { IntroSection } from "./sections/intro";
+
 import { LogoCloudSection } from "./sections/logo-cloud";
 import { StatisticsSection } from "./sections/statistics";
 import { SupportSection } from "./sections/support";
@@ -31,14 +33,9 @@ export const HomePage = () => {
       </Helmet>
 
       <HeroSection />
-      <LogoCloudSection />
-      <StatisticsSection />
-      <FeaturesSection />
+      <IntroSection/>
       <TemplatesSection />
-      <TestimonialsSection />
-      <SupportSection />
       <FAQSection />
-      <ContributorsSection />
     </main>
   );
 };
