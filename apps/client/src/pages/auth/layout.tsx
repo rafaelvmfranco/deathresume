@@ -12,6 +12,27 @@ import { SocialAuth } from "./_components/social-auth";
 
 const authRoutes = [{ path: "/auth/login" }, { path: "/auth/register" }];
 
+const textAndRoutes = [
+  {
+    text: "Don't you have an account?",
+    sourseRoute: "/auth/login",
+    buttonText: "Create one now",
+    route: "/auth/register",
+  },
+  {
+    text: "Already have an account?",
+    sourseRoute: "/auth/register",
+    buttonText: "Sign in now",
+    route: "/auth/login",
+  },
+  {
+    text: "",
+    sourseRoute: "/auth/forgot-password",
+    buttonText: "Back",
+    route: "/auth/login",
+  },
+];
+
 export const AuthLayout = () => {
   const location = useLocation();
   const { providers } = useAuthProviders();
@@ -22,20 +43,32 @@ export const AuthLayout = () => {
   // Condition (providers.length === 1) hides the divider if providers[] includes only "email"
   const hideDivider = !providers.includes("email") || providers.length === 1;
 
+  const textAndRoute = textAndRoutes.find((item) => item.sourseRoute === location.pathname);
+
   return (
     <div className="flex h-screen w-screen">
-      <div className="relative flex w-full flex-col justify-center gap-y-8 px-12 sm:mx-auto sm:basis-[420px] sm:px-0 lg:basis-[480px] lg:px-12">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="h-24 w-24">
-            <Logo className="-ml-3" size={96} />
+      <div className="fixed top-0 left-0 w-full py-3 flex items-center justify-between z-10">
+        <div className="px-8 lg:px-28">
+          <Link to="/">
+            <Logo setLight={true} size={48} />
           </Link>
-
-          <div className="right-0 space-x-2 text-right lg:absolute lg:p-12 lg:text-center">
-            <LocaleSwitch />
-            <ThemeSwitch />
-          </div>
         </div>
+        <div className="flex gap-8 px-20 text-white">
+          <div className="my-auto">{textAndRoute.text}</div>
 
+          <Link to={textAndRoute.route}>
+            <button className="text-reddish font-bold uppercase text-white border border-white rounded py-2 px-4">
+              {textAndRoute.buttonText}
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      <div class="fixed w-full h-1/2 bg-violet"></div>
+
+      <div className="w-full my-auto flex flex-col justify-center gap-y-8 p-4 sm:mx-auto sm:basis-[420px] 
+      sm:px-0 lg:basis-[480px] z-20 rounded-xl bg-white border border-black dark:text-black"
+      >
         <Outlet />
 
         {isAuthRoute && (
@@ -46,7 +79,7 @@ export const AuthLayout = () => {
                 {t({
                   message: "or continue with",
                   context:
-                    "The user can either login with email/password, or continue with GitHub or Google.",
+                    "The user can either login with email/password, or continue with Google.",
                 })}
               </span>
               <hr className="flex-1" />
@@ -57,24 +90,9 @@ export const AuthLayout = () => {
         )}
       </div>
 
-      <div className="relative hidden lg:block lg:flex-1">
-        <img
-          width={1920}
-          height={1080}
-          alt="Open books on a table"
-          className="h-screen w-full object-cover object-center"
-          src="/backgrounds/patrick-tomasso-Oaqk7qqNh_c-unsplash.jpg"
-        />
-
-        <div className="absolute bottom-5 right-5 z-10 bg-primary/30 px-4 py-2 text-xs font-medium text-primary-foreground backdrop-blur-sm">
-          <a
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href="https://unsplash.com/photos/Oaqk7qqNh_c"
-          >
-            {t`Photograph by Patrick Tomasso`}
-          </a>
-        </div>
+      <div className="fixed bottom-0 left-0 w-full h-24 flex justify-center items-center">
+        <LocaleSwitch />
+        <ThemeSwitch />
       </div>
     </div>
   );

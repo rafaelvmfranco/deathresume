@@ -43,7 +43,7 @@ export const ForgotPasswordPage = () => {
 
   if (submitted) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 px-4">
         <Helmet>
           <title>
             {t`You've got mail!`} - {t`Death Resume`}
@@ -89,14 +89,9 @@ export const ForgotPasswordPage = () => {
             />
 
             <div className="mt-4 flex items-center gap-x-2">
-              <Button variant="link" className="px-5" onClick={() => navigate(-1)}>
-                <ArrowLeft size={14} className="mr-2" />
-                <span>{t`Back`}</span>
-              </Button>
-
-              <Button type="submit" disabled={loading} className="w-full">
-                {t`Send Email`}
-              </Button>
+              <button type="submit" disabled={loading} className="w-full bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-lg hover:opacity-80">
+              {t`Send Email`}
+              </button>
             </div>
           </form>
         </Form>

@@ -49,7 +49,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 pt-4">
       <Helmet>
         <title>
           {t`Sign in to your account`} - {t`Death Resume`}
@@ -58,15 +58,6 @@ export const LoginPage = () => {
 
       <div className="space-y-1.5">
         <h2 className="text-2xl font-semibold tracking-tight">{t`Sign in to your account`}</h2>
-        <h6 className={cn(emailAuthDisabled && "hidden")}>
-          <span className="opacity-75">{t`Don't have an account?`}</span>
-          <Button asChild variant="link" className="px-1.5">
-            <Link to="/auth/register">
-              {t({ message: "Create one now", context: "This is a link to create a new account" })}{" "}
-              <ArrowRight className="ml-1" />
-            </Link>
-          </Button>
-        </h6>
       </div>
 
       <div className={cn(emailAuthDisabled && "hidden")}>
@@ -111,12 +102,15 @@ export const LoginPage = () => {
               )}
             />
 
-            <div className="mt-4 flex items-center gap-x-4">
-              <Button type="submit" disabled={loading} className="flex-1">
+            <div className="block mt-4 flex flex-col items-center gap-x-4">
+              <button
+                disabled={loading}
+                className="w-80 bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold hover:opacity-80"
+              >
                 {t`Sign in`}
-              </Button>
+              </button>
 
-              <Button asChild variant="link" className="px-4">
+              <Button asChild variant="link" className="block p-4 text-gray-500 pb-0">
                 <Link to="/auth/forgot-password">{t`Forgot Password?`}</Link>
               </Button>
             </div>

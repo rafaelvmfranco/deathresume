@@ -61,7 +61,7 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 pt-4">
       <Helmet>
         <title>
           {t`Create a new account`} - {t`Death Resume`}
@@ -70,14 +70,6 @@ export const RegisterPage = () => {
 
       <div className="space-y-1.5">
         <h2 className="text-2xl font-semibold tracking-tight">{t`Create a new account`}</h2>
-        <h6 className={cn(emailAuthDisabled && "hidden")}>
-          <span className="opacity-75">{t`Already have an account?`}</span>
-          <Button asChild variant="link" className="px-1.5">
-            <Link to="/auth/login">
-              {t`Sign in now`} <ArrowRight className="ml-1" />
-            </Link>
-          </Button>
-        </h6>
       </div>
 
       {disableSignups && (
@@ -180,10 +172,14 @@ export const RegisterPage = () => {
                 </FormItem>
               )}
             />
-
-            <Button disabled={loading} className="mt-4 w-full">
-              {t`Sign up`}
-            </Button>
+            <div className="flex flex justify-center">
+              <button
+                disabled={loading}
+                className="w-80 bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold hover:opacity-80"
+              >
+                {t`Sign up`}
+              </button>
+            </div>
           </form>
         </Form>
       </div>
