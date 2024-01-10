@@ -10,12 +10,12 @@ export const SocialAuth = () => {
   if (!providers || providers.length === 0) return null;
 
   return (
-    <div className="flex align-center">
+    <div className="w-full flex align-center justify-center dark:text-white">
       {providers.includes("google") && (
         <Button
           asChild
           size="lg"
-          className="w-full !bg-[#4285F4] !text-white hover:!bg-[#4285F4]/80"
+          className="w-80 !bg-[#4285F4] !text-white hover:!bg-[#4285F4]/80 rounded no-underline font-bold"
         >
           <a href="/api/auth/google">
             <GoogleLogo className="mr-3 h-4 w-4" />
