@@ -1,20 +1,31 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import { t } from "@lingui/macro";
 import { ScrollArea, Separator } from "@reactive-resume/ui";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
-const fakeObject = {
+type Plan = "free" | "plus" | "premium" | "enterprise";
+
+type Usage = {
+  name: string;
+  currentNumber: number;
+  limitNumber: number | null;
+};
+
+type PlanUsage = {
+  plan: Plan;
+  usage: Usage;
+};
+
+const fakeObject: PlanUsage = {
   plan: "free",
   usage: [
     { name: "resumes", currentNumber: 3, limitNumber: 20 },
-    { name: "downloads", currentNumber: 230, limitNumber: null },
-    { name: "viewes", currentNumber: 12000, limitNumber: null },
-    { name: "alWords", currentNumber: 15000, limitNumber: null },
+    { name: "downloads", currentNumber: 230, limitNumber: 400 },
+    { name: "views", currentNumber: 12000, limitNumber: 600000 },
+    { name: "alWords", currentNumber: 15000, limitNumber: 16000 },
   ],
 };
-
-const fakePlans = [];
 
 const isPlanFree = (data) => {
   return data.plan === "free" ? true : false;
@@ -26,32 +37,33 @@ function getPlanTitle(data) {
 }
 
 const getUsageData = (usage) => {
-  let color = "";
+  let style = "";
   let title = "";
 
   switch (usage.name || "") {
     case "resumes":
-      color = "green";
+      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-green-600";
       title = "Resumes";
       break;
     case "downloads":
-      color = "yellow";
+      style = "w-full progress-unfilled:bg-slate-300 progress-filled:border-transparent progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-red-600";
       title = "Downloads";
       break;
     case "views":
-      color = "amber";
+      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-amber-600";
       title = "Views";
       break;
     case "alWords":
-      color = "blue";
+      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-blue-600";
       title = "Al words";
       break;
     default:
-      color = "violet";
+      style = "w-full progress-unfilled:bg-slate-300 rounded-lg progress-filled:rounded-lg progress-filled:bg-violet-600";
+      title = "";
   }
 
   return {
-    progressBarStyling: `w-full [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-slate-300 [&::-webkit-progress-value]:bg-${color} [&::-moz-progress-bar]:bg-${color}`,
+    progressBarStyling: style,
     currentNumber: usage.currentNumber,
     limitNumber: usage.limitNumber ? usage.limitNumber : "Unlimited",
     name: usage.name,
@@ -62,11 +74,8 @@ const getUsageData = (usage) => {
 };
 
 export const UsagePage = () => {
-  const [showPopup, setShowPopup] = useState<boolean>(false);
-
   return (
     <>
-      {showPopup && <div>show pop up</div>}
       <Helmet>
         <title>
           {t`Usage`} - {t`Death Resume`}
@@ -85,7 +94,7 @@ export const UsagePage = () => {
         {fakeObject.usage
           .map((usageItem) => getUsageData(usageItem))
           .map((usageItem) => (
-            <div>
+            <div key={usageItem.name}>
               <h3 className="text-2xl font-bold leading-relaxed tracking-tight">
                 {t`${usageItem.title}`}
               </h3>
@@ -101,23 +110,15 @@ export const UsagePage = () => {
             </div>
           ))}
         <div className="flex justify-between align-center">
-          {/* add link to paying, add translations */}
           <div className="flex justify-center items-center text-lg font-bold">
             <span>{getPlanTitle(fakeObject)}</span>
           </div>
-          {isPlanFree ? (
-            <button
-              className="bg-reddish rounded-md px-4 py-2 text-white text-lg"
-              onClick={() => setShowPopup(true)}
-            >{t`Upgrade`}</button>
-          ) : (
-            <button
-              className="bg-reddish rounded-md px-4 py-2 text-white text-lg"
-              onClick={() => setShowPopup(true)}
-            >
-              Manage subcription
+
+          <Link to={isPlanFree ? "/billing" : "/stripe-route"}>
+            <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
+              {isPlanFree(fakeObject) ? `${t`Upgrade`}` : "Manage subcription"}
             </button>
-          )}
+          </Link>
         </div>
       </div>
     </>
