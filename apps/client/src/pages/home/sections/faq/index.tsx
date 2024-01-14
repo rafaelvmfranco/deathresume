@@ -93,10 +93,10 @@ export const FAQSection = () => (
      
       <div className="text-center lg:px-8">
         <p className="text-4xl font-extrabold">Death FAQ</p>
-        <p className="px-4">
+        <div className="px-4">
           <div>Sometimes even Death</div>
           <div className="px-2">have to give a FAQ</div>          
-        </p>
+        </div>
 
       </div>
       <Accordion collapsible type="single">
