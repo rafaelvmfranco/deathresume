@@ -4,7 +4,9 @@ import { ScrollArea, Separator } from "@reactive-resume/ui";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
-type Plan = "free" | "plus" | "premium" | "enterprise";
+type PlanName = "free" | "plus" | "premium" | "enterprise";
+
+type PlanObject = "resumes" | "downloads" | "views" | "alWords";
 
 type Usage = {
   name: string;
@@ -13,8 +15,8 @@ type Usage = {
 };
 
 type PlanUsage = {
-  plan: Plan;
-  usage: Usage;
+  plan: PlanName;
+  usage: Usage[];
 };
 
 const fakeObject: PlanUsage = {
@@ -27,16 +29,16 @@ const fakeObject: PlanUsage = {
   ],
 };
 
-const isPlanFree = (data) => {
+const isPlanFree = (data: PlanUsage) => {
   return data.plan === "free" ? true : false;
 };
 
-function getPlanTitle(data) {
+function getPlanTitle(data: PlanUsage) {
   const str = data.plan;
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const getUsageData = (usage) => {
+const getUsageData = (usage: Usage) => {
   let style = "";
   let title = "";
 
@@ -114,7 +116,7 @@ export const UsagePage = () => {
             <span>{getPlanTitle(fakeObject)}</span>
           </div>
 
-          <Link to={isPlanFree ? "/billing" : "/stripe-route"}>
+          <Link to={isPlanFree(fakeObject) ? "/billing" : "/stripe-route"}>
             <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
               {isPlanFree(fakeObject) ? `${t`Upgrade`}` : "Manage subcription"}
             </button>
