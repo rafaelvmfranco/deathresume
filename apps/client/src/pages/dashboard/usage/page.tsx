@@ -116,7 +116,7 @@ export const UsagePage = () => {
             <span>{getPlanTitle(fakeObject)}</span>
           </div>
 
-          <Link to={isPlanFree(fakeObject) ? "/billing" : "/stripe-route"}>
+          <Link to={isPlanFree(fakeObject) ? "/plans" : "/stripe-route"}>
             <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
               {isPlanFree(fakeObject) ? `${t`Upgrade`}` : "Manage subcription"}
             </button>
