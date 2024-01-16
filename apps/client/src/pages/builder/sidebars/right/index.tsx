@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { ThemeSwitch } from "@/client/components/theme-switch";
 
 import { ExportSection } from "./sections/export";
-import { InformationSection } from "./sections/information";
 import { LayoutSection } from "./sections/layout";
 import { NotesSection } from "./sections/notes";
 import { PageSection } from "./sections/page";
@@ -45,8 +44,6 @@ export const RightSidebar = () => {
           <ExportSection />
           <Separator />
           <NotesSection />
-          <Separator />
-          <InformationSection />
           <Separator />
         </div>
       </ScrollArea>
