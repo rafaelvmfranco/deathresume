@@ -15,6 +15,7 @@ import { DashboardLayout } from "../pages/dashboard/layout";
 import { ResumesPage } from "../pages/dashboard/resumes/page";
 import { SettingsPage } from "../pages/dashboard/settings/page";
 import { UsagePage } from "../pages/dashboard/usage/page";
+import { PlansPage } from "../pages/plans/page";
 import { HomeLayout } from "../pages/home/layout";
 import { HomePage } from "../pages/home/page";
 import { publicLoader, PublicResumePage } from "../pages/public/page";
@@ -70,6 +71,10 @@ export const routes = createRoutesFromElements(
           <Route index element={<Navigate to="/dashboard/resumes" replace />} />
         </Route>
       </Route>
+    </Route>
+
+    <Route element={<AuthGuard />}>
+      <Route path="plans" element={<PlansPage />} />
     </Route>
 
     <Route path="builder">

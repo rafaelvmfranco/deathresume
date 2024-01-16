@@ -12,8 +12,9 @@ module.exports = {
   ],
   plugins: [
     plugin(function ({ addVariant }) {
-      addVariant("progress-unfilled", ["&::-webkit-progress-bar", "&"]);
+      addVariant("progress-unfilled", ["&::-webkit-progress-bar", "&::-moz-range-progress", "&"]);
       addVariant("progress-filled", ["&::-webkit-progress-value", "&::-moz-progress-bar", "&"]);
+      addVariant("slider-track", ["&::-webkit-slider-thumb", "&::-moz-range-thumb", "&"]);
     }),
   ],
 };
