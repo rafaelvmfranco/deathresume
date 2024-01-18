@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 export const UpgradePopup = () => {
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-40 bg-gray-600 bg-opacity-25">
-      <div className="w-1/3 p-12 rounded bg-white">
+    <div className="fixed inset-0 h-screen w-screen flex items-center justify-center z-[70] bg-gray-600 bg-opacity-25">
+      <div className="w-full m-4 lg:w-1/3 p-12 rounded bg-white">
         <p className="text-2xl font-bold">Upgrade your plan</p>
         <p>Upgrade reason.</p>
         <div className="mt-12">
