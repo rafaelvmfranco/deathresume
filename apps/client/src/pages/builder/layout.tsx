@@ -7,11 +7,15 @@ import { useBuilderStore } from "@/client/stores/builder";
 
 import { BuilderHeader } from "./_components/header";
 import { BuilderToolbar } from "./_components/toolbar";
+import { UpgradePopup } from "./_components/ugrade";
 import { LeftSidebar } from "./sidebars/left";
 import { RightSidebar } from "./sidebars/right";
 
+const checkedToOpen = true;
+
 const OutletSlot = () => (
   <>
+    {checkedToOpen && <UpgradePopup />}
     <BuilderHeader />
 
     <div className="absolute inset-0">

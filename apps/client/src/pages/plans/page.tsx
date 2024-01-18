@@ -187,7 +187,7 @@ export const PlansPage = () => {
           </div>
         </div>
 
-        <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-20 grid grid-cols-1 lg:grid-cols-4 gap-4">
           {currentPlans.map((plan) => (
             <div
               key={plan.name + currentPeriod}
