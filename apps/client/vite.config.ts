@@ -14,6 +14,7 @@ export default defineConfig({
 
   define: {
     appVersion: JSON.stringify(process.env.npm_package_version),
+    openAIKey: JSON.stringify(process.env.__CLIENT_OPENAI_KEY)
   },
 
   server: {
