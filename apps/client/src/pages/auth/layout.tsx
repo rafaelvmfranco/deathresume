@@ -12,7 +12,13 @@ import { SocialAuth } from "./_components/social-auth";
 
 const authRoutes = [{ path: "/auth/login" }, { path: "/auth/register" }];
 
-const textAndRoutes = [
+type RoutesData = {
+  text: string;
+  sourseRoute: string;
+  buttonText: string;
+  route: string;
+};
+const routesData: RoutesData[] = [
   {
     text: "Don't you have an account?",
     sourseRoute: "/auth/login",
@@ -43,7 +49,9 @@ export const AuthLayout = () => {
   // Condition (providers.length === 1) hides the divider if providers[] includes only "email"
   const hideDivider = !providers.includes("email") || providers.length === 1;
 
-  const textAndRoute = textAndRoutes.find((item) => item.sourseRoute === location.pathname);
+  const routeData = routesData.find(
+    (routeItem: RoutesData) => routeItem.sourseRoute === location.pathname,
+  );
 
   return (
     <div className="flex h-screen w-screen">
@@ -53,20 +61,23 @@ export const AuthLayout = () => {
             <Logo setLight={true} size={48} />
           </Link>
         </div>
-        <div className="flex gap-8 px-20 text-white">
-          <div className="my-auto">{textAndRoute.text}</div>
 
-          <Link to={textAndRoute.route}>
-            <button className="text-reddish font-bold uppercase text-white border border-white rounded py-2 px-4">
-              {textAndRoute.buttonText}
-            </button>
-          </Link>
-        </div>
+        {routeData && (
+          <div className="flex gap-8 px-20 text-white">
+            <div className="my-auto">{routeData?.text}</div>
+            <Link to={routeData?.route}>
+              <button className="text-reddish font-bold uppercase text-white border border-white rounded py-2 px-4">
+                {routeData?.buttonText}
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
 
-      <div class="fixed w-full h-1/2 bg-violet"></div>
+      <div className="fixed w-full h-1/2 bg-violet"></div>
 
-      <div className="w-full my-auto flex flex-col justify-center gap-y-8 p-4 sm:mx-auto sm:basis-[420px] 
+      <div
+        className="w-full my-auto flex flex-col justify-center gap-y-8 p-4 sm:mx-auto sm:basis-[420px] 
       sm:px-0 lg:basis-[480px] z-20 rounded-xl bg-white border border-black dark:text-black"
       >
         <Outlet />
