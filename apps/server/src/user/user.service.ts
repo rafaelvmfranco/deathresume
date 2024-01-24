@@ -1,20 +1,20 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { UserDto, UserWithSecrets } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { PrismaService } from "nestjs-prisma";
 
 import { StorageService } from "../storage/storage.service";
-
 @Injectable()
 export class UserService {
   private readonly redis: Redis;
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly storageService: StorageService,
     private readonly redisService: RedisService,
+    private readonly storageService: StorageService
   ) {
     this.redis = this.redisService.getClient();
   }

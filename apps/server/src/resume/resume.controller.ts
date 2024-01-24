@@ -125,6 +125,7 @@ export class ResumeController {
     return this.resumeService.remove(user.id, id);
   }
 
+  //bug
   @Get("/print/:id")
   @UseGuards(OptionalGuard, ResumeGuard)
   async printResume(@User("id") userId: string | undefined, @Resume() resume: ResumeDto) {

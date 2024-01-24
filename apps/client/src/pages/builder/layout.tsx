@@ -11,7 +11,7 @@ import { UpgradePopup } from "./_components/ugrade";
 import { LeftSidebar } from "./sidebars/left";
 import { RightSidebar } from "./sidebars/right";
 
-const checkedToOpen = true;
+const checkedToOpen = false;
 
 const OutletSlot = () => (
   <>

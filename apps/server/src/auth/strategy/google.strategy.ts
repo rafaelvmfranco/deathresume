@@ -41,18 +41,18 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
       done(null, user);
     } catch (error) {
       try {
-        user = await this.userService.create({
-          email,
-          picture,
-          locale: "en-US",
-          name: displayName,
-          provider: "google",
-          emailVerified: true, // auto-verify emails
-          username: processUsername(username ?? email.split("@")[0]),
-          secrets: { create: {} },
-        });
+        // const user = await this.userService.create({
+        //   email,
+        //   picture,
+        //   locale: "en-US",
+        //   name: displayName,
+        //   provider: "google",
+        //   emailVerified: true, // auto-verify emails
+        //   username: processUsername(username ?? email.split("@")[0]),
+        //   secrets: { create: {} },
+        // });
 
-        done(null, user);
+        // done(null, user);
       } catch (error) {
         throw new BadRequestException(ErrorMessage.UserAlreadyExists);
       }

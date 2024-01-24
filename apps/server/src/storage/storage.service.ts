@@ -102,7 +102,7 @@ export class StorageService implements OnModuleInit {
         this.logger.log("Successfully connected to the storage service.");
       }
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      //throw new InternalServerErrorException(error);
     }
   }
 
