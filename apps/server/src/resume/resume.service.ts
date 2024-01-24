@@ -18,7 +18,6 @@ import { PrismaService } from "nestjs-prisma";
 import { PrinterService } from "@/server/printer/printer.service";
 
 import { StorageService } from "../storage/storage.service";
-import { FirebaseRepository } from "../firebase/firebase.repository";
 import { UtilsService } from "../utils/utils.service";
 
 @Injectable()
@@ -29,7 +28,6 @@ export class ResumeService {
     private readonly prisma: PrismaService,
     private readonly printerService: PrinterService,
     private readonly storageService: StorageService,
-    private readonly firebaseRepository: FirebaseRepository,
     private readonly redisService: RedisService,
     private readonly utils: UtilsService,
   ) {
@@ -190,9 +188,6 @@ export class ResumeService {
       // Remove files in storage, and their cached keys
       this.storageService.deleteObject(userId, "resumes", id),
       this.storageService.deleteObject(userId, "previews", id),
-
-      this.firebaseRepository.deleteFileFromBucket(userId, "resumes", id),
-      this.firebaseRepository.deleteFileFromBucket(userId, "previews", id),
     ]);
 
     return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });

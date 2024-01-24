@@ -41,18 +41,18 @@ export class GitHubStrategy extends PassportStrategy(Strategy, "github") {
       done(null, user);
     } catch (error) {
       try {
-        // const user = await this.userService.create({
-        //   email,
-        //   picture: picture || "",
-        //   locale: "en-US",
-        //   name: displayName,
-        //   provider: "github",
-        //   emailVerified: true, // auto-verify emails
-        //   username: processUsername(username ?? email.split("@")[0]),
-        //   secrets: { create: {} },
-        // });
+        user = await this.userService.create({
+          email,
+          picture,
+          locale: "en-US",
+          name: displayName,
+          provider: "github",
+          emailVerified: true, // auto-verify emails
+          username: processUsername(username ?? email.split("@")[0]),
+          secrets: { create: {} },
+        });
 
-        // done(null, user);
+        done(null, user);
       } catch (error) {
         throw new BadRequestException(ErrorMessage.UserAlreadyExists);
       }

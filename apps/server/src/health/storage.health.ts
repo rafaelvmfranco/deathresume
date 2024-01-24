@@ -1,19 +1,18 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { HealthIndicator, HealthIndicatorResult } from "@nestjs/terminus";
 
-import { FirebaseRepository } from "../firebase/firebase.repository";
+import { StorageService } from "../storage/storage.service";
 
 @Injectable()
 export class StorageHealthIndicator extends HealthIndicator {
-  constructor(
-    private readonly firebaseRepository: FirebaseRepository,
-  ) {
+  constructor(private readonly storageService: StorageService) {
     super();
   }
 
   async isHealthy(): Promise<HealthIndicatorResult> {
-    try {            
-      await this.firebaseRepository.doesBucketExist();
+    try {
+      await this.storageService.bucketExists();
+
       return this.getStatus("storage", true);
     } catch (error) {
       return this.getStatus("storage", false, { message: error.message });

@@ -12,7 +12,6 @@ import { connect } from "puppeteer";
 
 import { Config } from "../config/schema";
 import { StorageService } from "../storage/storage.service";
-import { FirebaseRepository } from "../firebase/firebase.repository";
 import { UtilsService } from "../utils/utils.service";
 
 @Injectable()
@@ -24,7 +23,6 @@ export class PrinterService {
   constructor(
     private readonly configService: ConfigService<Config>,
     private readonly storageService: StorageService,
-    private readonly firebaseRepository: FirebaseRepository,
     private readonly httpService: HttpService,
     private readonly utils: UtilsService,
   ) {
@@ -49,7 +47,6 @@ export class PrinterService {
     return version;
   }
 
-  //buggy
   async printResume(resume: ResumeDto) {
     return this.utils.getCachedOrSet(
       `user:${resume.userId}:storage:resumes:${resume.id}`,
@@ -201,13 +198,6 @@ export class PrinterService {
         resume.id,
       );
 
-      const resumeUrlFirebase = await this.firebaseRepository.uploadToBucket(
-        resume.userId,
-        "resumes",
-        buffer,
-        resume.id,
-      );
-
       // Close all the pages and disconnect from the browser
       await page.close();
       browser.disconnect();
@@ -221,9 +211,8 @@ export class PrinterService {
   async generatePreview(resume: ResumeDto) {
     const browser = await this.getBrowser();
     const page = await browser.newPage();
- 
+
     let url = this.utils.getUrl();
-    this.logger.log("url", url)
     const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
     const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
 
@@ -238,11 +227,9 @@ export class PrinterService {
       page.on("request", (request) => {
         if (request.url().startsWith(storageUrl)) {
           const modifiedUrl = request.url().replace("localhost", `host.docker.internal`);
+
           request.continue({ url: modifiedUrl });
-        
         } else {
-
-
           request.continue();
         }
       });
@@ -255,24 +242,14 @@ export class PrinterService {
 
     await page.setViewport({ width: 794, height: 1123 });
 
-    
     await page.goto(`${url}/artboard/preview`, { waitUntil: "networkidle0" });
-this.logger.log("I am here")
+
     // Save the JPEG to storage and return the URL
     // Store the URL in cache for future requests, under the previously generated hash digest
     const buffer = await page.screenshot({ quality: 80, type: "jpeg" });
 
     // Generate a hash digest of the resume data, this hash will be used to check if the resume has been updated
     const previewUrl = await this.storageService.uploadObject(
-      resume.userId,
-      "previews",
-      buffer,
-      resume.id,
-    );
-
-    this.logger.log("previewUrl", previewUrl)
-
-    const previewUrlFirebase = await this.firebaseRepository.uploadToBucket(
       resume.userId,
       "previews",
       buffer,
