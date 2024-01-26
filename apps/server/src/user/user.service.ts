@@ -5,7 +5,7 @@ import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { PrismaService } from "nestjs-prisma";
 
-import { StorageService } from "../storage/storage.service";
+import { FirebaseService } from "../firebase/firebase.service";
 
 @Injectable()
 export class UserService {
@@ -13,9 +13,9 @@ export class UserService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly storageService: StorageService,
+    private readonly firebaseService: FirebaseService,
     private readonly redisService: RedisService,
-  ) {
+      ) {
     this.redis = this.redisService.getClient();
   }
 
@@ -71,7 +71,7 @@ export class UserService {
   }
 
   async deleteOneById(id: string) {
-    await Promise.all([this.redis.del(`user:${id}:*`), this.storageService.deleteFolder(id)]);
+    await Promise.all([this.redis.del(`user:${id}:*`), this.firebaseService.deleteBucketFolderById(id)]);
 
     return await this.prisma.user.delete({ where: { id } });
   }

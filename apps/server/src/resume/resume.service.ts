@@ -17,7 +17,7 @@ import { PrismaService } from "nestjs-prisma";
 
 import { PrinterService } from "@/server/printer/printer.service";
 
-import { StorageService } from "../storage/storage.service";
+import { FirebaseService } from "../firebase/firebase.service";
 import { UtilsService } from "../utils/utils.service";
 
 @Injectable()
@@ -27,7 +27,7 @@ export class ResumeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly printerService: PrinterService,
-    private readonly storageService: StorageService,
+    private readonly firebaseService: FirebaseService,
     private readonly redisService: RedisService,
     private readonly utils: UtilsService,
   ) {
@@ -185,9 +185,9 @@ export class ResumeService {
       this.redis.del(`user:${userId}:resumes`),
       this.redis.del(`user:${userId}:resume:${id}`),
 
-      // Remove files in storage, and their cached keys
-      this.storageService.deleteObject(userId, "resumes", id),
-      this.storageService.deleteObject(userId, "previews", id),
+      // Remove files in bucket, and their cached keys
+      this.firebaseService.deleteFileFromBucket(userId, "resumes", id),
+      this.firebaseService.deleteFileFromBucket(userId, "previews", id),
     ]);
 
     return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });
