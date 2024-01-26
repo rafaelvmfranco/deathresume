@@ -1,11 +1,11 @@
 import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
 
-import { StorageModule } from "../storage/storage.module";
+import { FirebaseModule } from "../firebase/firebase.module";
 import { PrinterService } from "./printer.service";
 
 @Module({
-  imports: [HttpModule, StorageModule],
+  imports: [HttpModule, FirebaseModule],
   providers: [PrinterService],
   exports: [PrinterService],
 })

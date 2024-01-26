@@ -4,7 +4,8 @@ import { app } from "firebase-admin";
 type CollectionName = "userCollection" | "planCollection" | "resumeCollection" | "secretCollection";
 
 @Injectable()
-export class FirebaseRepository {
+export class FirebaseService {
+  
   db: FirebaseFirestore.Firestore;
   bucket: any;
   userCollection: FirebaseFirestore.CollectionReference;
@@ -92,5 +93,9 @@ export class FirebaseRepository {
       this.resumeCollection.get(),
       this.secretCollection.get(),
     ]);
+  }
+  
+  async uploadObject(userId: string, arg1: string, buffer: Buffer, userId1: string) {
+      throw new Error("Method not implemented.");
   }
 }
