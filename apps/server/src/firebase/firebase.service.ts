@@ -5,7 +5,6 @@ type CollectionName = "userCollection" | "planCollection" | "resumeCollection" |
 
 @Injectable()
 export class FirebaseService {
-  
   db: FirebaseFirestore.Firestore;
   bucket: any;
   userCollection: FirebaseFirestore.CollectionReference;
@@ -26,8 +25,29 @@ export class FirebaseService {
     return await this[collection].add(dto);
   }
 
-  async findByField(collection: CollectionName, dto: Record<string, string>) {
-    return await this[collection].where(dto.field, "==", dto.value).get();
+  async findUniqueByField(collection: CollectionName, dto: Record<string, string>, selectFields?: string[]) {
+    let result = {};
+    const selectionCondition = selectFields && selectFields.length > 0 ? selectFields.join(",") : '*';
+    await this[collection]
+      .where(dto.field, "==", dto.value)
+      .select(selectionCondition)
+      .limit(1)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc: any) => {
+          result = doc.data();
+        });
+      });
+
+    return result;
+  }
+
+  async findUniqueByFieldOrThrow(collection: CollectionName, dto: Record<string, string>, selectFields?: string[]){
+    const data = await this.findUniqueByField(collection, dto, selectFields);
+    if (!data) {
+      throw new Error("Data not found");
+    }
+    return data;
   }
 
   async updateItemByField(
@@ -81,7 +101,7 @@ export class FirebaseService {
   deleteBucketFolderById(id: string) {
     return this.bucket.deleteFolder(id);
   }
-  
+
   async doesBucketExist() {
     await this.bucket.exists();
   }
@@ -94,8 +114,8 @@ export class FirebaseService {
       this.secretCollection.get(),
     ]);
   }
-  
+
   async uploadObject(userId: string, arg1: string, buffer: Buffer, userId1: string) {
-      throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 }
