@@ -1,11 +1,35 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { app } from "firebase-admin";
+import { app, firestore } from "firebase-admin";
 
 type CollectionName = "userCollection" | "planCollection" | "resumeCollection" | "secretCollection";
 
+type SearchCondition = {
+  condition: {
+    field: string;
+    value: any;
+  };
+};
+
+type SearchConditions = {
+  conditions: {
+    field: string;
+    value: any;
+  }[];
+};
+
+type OrderBy = {
+  order: {
+    field: string;
+    by: "asc" | "desc";
+  };
+};
+
+type Select = {
+  select?: string[];
+};
+
 @Injectable()
 export class FirebaseService {
-  
   db: FirebaseFirestore.Firestore;
   bucket: any;
   userCollection: FirebaseFirestore.CollectionReference;
@@ -22,24 +46,86 @@ export class FirebaseService {
     this.secretCollection = this.db.collection("secrets");
   }
 
-  async create(collection: CollectionName, dto: any) {
+  async create(collection: CollectionName, {dto}: any) {
     return await this[collection].add(dto);
   }
 
-  async findByField(collection: CollectionName, dto: Record<string, string>) {
-    return await this[collection].where(dto.field, "==", dto.value).get();
+  async findUnique(
+    collection: CollectionName,
+    { condition }: SearchCondition,
+    { select }: Partial<Select> = { select: [] },
+  ) {
+    let result = {};
+    const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
+    await this[collection]
+      .where(condition.field, "==", condition.value)
+      .select(selectionCondition)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.size > 1) {
+          result = {};
+          return;
+        }
+        querySnapshot.forEach((doc: any) => {
+          result = doc.data();
+        });
+      });
+
+    return result;
   }
 
-  async updateItemByField(
+  async findFirst(
     collection: CollectionName,
-    updateData: {
-      field: string;
-      value: string;
-    },
-    dto: any,
+    { conditions }: SearchConditions,
+    { select }: Partial<Select> = {},
   ) {
+    const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
+
+    let query: firestore.Query = this[collection];
+
+    conditions.forEach((condition) => {
+      query = query.where(condition.field, "==", condition.value);
+    });
+
+    const querySnapshot = await query.select(selectionCondition).limit(1).get();
+
+    return querySnapshot.docs.map((doc) => doc.data());
+  }
+
+  async findManyAndOrder(
+    collection: CollectionName,
+    { condition }: SearchCondition,
+    { order }: OrderBy,
+  ) {
+    return await this[collection]
+      .where(condition.field, "==", condition.value)
+      .orderBy(order.field, order.by)
+      .get();
+  }
+
+  async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
+    const data = await this.findUnique(collection, condition, select);
+    if (!data) {
+      throw new Error("Data not found");
+    }
+    return data;
+  }
+
+  async findFirstOrThrow(
+    collection: CollectionName,
+    conditions: SearchConditions,
+    select?: Select,
+  ) {
+    const data = await this.findFirst(collection, conditions, select);
+    if (!data) {
+      throw new Error("Data not found");
+    }
+    return data;
+  }
+
+  async updateItem(collection: CollectionName, { condition }: SearchCondition, { dto }: any) {
     return this[collection]
-      .where(updateData.field, "==", updateData.value)
+      .where(condition.field, "==", condition.value)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach(async (doc: any) => {
@@ -48,15 +134,15 @@ export class FirebaseService {
       })
       .catch((error: Error) => {
         Logger.log(
-          `Error while updating doc with ${updateData.field}=${updateData.value} in ${collection}`,
+          `Error while updating doc with ${condition.field}=${condition.value} in ${collection}`,
           error,
         );
       });
   }
 
-  async deleteByField(collection: CollectionName, dto: Record<string, string>) {
+  async deleteByField(collection: CollectionName, { condition }: SearchCondition) {
     return await this[collection]
-      .where(dto.field, "==", dto.value)
+      .where(condition.field, "==", condition.value)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach(async (doc: any) => {
@@ -65,7 +151,7 @@ export class FirebaseService {
       })
       .catch((error: Error) => {
         Logger.log(
-          `Error while deleting doc with ${dto.field}=${dto.value} in ${collection}`,
+          `Error while deleting doc with ${condition.field}=${condition.value} in ${collection}`,
           error,
         );
       });
@@ -81,7 +167,7 @@ export class FirebaseService {
   deleteBucketFolderById(id: string) {
     return this.bucket.deleteFolder(id);
   }
-  
+
   async doesBucketExist() {
     await this.bucket.exists();
   }
@@ -94,8 +180,8 @@ export class FirebaseService {
       this.secretCollection.get(),
     ]);
   }
-  
+
   async uploadObject(userId: string, arg1: string, buffer: Buffer, userId1: string) {
-      throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 }
