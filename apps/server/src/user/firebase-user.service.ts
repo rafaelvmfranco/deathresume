@@ -18,12 +18,19 @@ export class FirebaseUserService {
   }
 
   async findOneById(id: string) {
-    const user = await this.firebaseService.findByField("userCollection", {
-      field: "id",
-      value: id,
-    });
-
-    if (!user) throw new HttpException(ErrorMessage.UserNotFound, 404);
+    const user = await this.firebaseService.findUniqueOrThrow(
+      "userCollection",
+      {
+        condition: {
+          field: "id",
+          value: id,
+        },
+      },
+      undefined,
+      {
+        includeSecret: true,
+      },
+    );
 
     if (!(user as any).secrets) {
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
@@ -33,19 +40,35 @@ export class FirebaseUserService {
   }
 
   async findOneByIdentifier(identifier: string) {
-    const user = await this.firebaseService.findByField("userCollection", {
-      field: "email",
-      value: identifier,
-    });
+    const user = await this.firebaseService.findUnique(
+      "userCollection",
+      {
+        condition: {
+          field: "email",
+          value: identifier,
+        },
+      },
+      undefined,
+      {
+        includeSecret: true,
+      },
+    );
 
     if (user) return user;
 
-    const userByName = await this.firebaseService.findByField("userCollection", {
-      field: "username",
-      value: identifier,
-    });
-
-    if (!userByName) throw new HttpException(ErrorMessage.UserNotFound, 404);
+    const userByName = await this.firebaseService.findUniqueOrThrow(
+      "userCollection",
+      {
+        condition: {
+          field: "username",
+          value: identifier,
+        },
+      },
+      undefined,
+      {
+        includeSecret: true,
+      },
+    );
 
     if (!(userByName as any).secrets) {
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
@@ -55,22 +78,24 @@ export class FirebaseUserService {
   }
 
   async create(data: Prisma.UserCreateInput) {
-    return await this.firebaseService.create("userCollection", data);
+    return await this.firebaseService.create("userCollection", data, {
+      includeSecret: true,
+    });
   }
 
   async updateByEmail(email: string, data: Prisma.UserUpdateArgs["data"]) {
-    return await this.firebaseService.updateItemByField(
+    return await this.firebaseService.updateItem(
       "userCollection",
-      { field: "email", value: email },
-      data,
+      { condition: { field: "email", value: email } },
+      { dto: data },
     );
   }
 
   async updateByResetToken(resetToken: string, data: Prisma.SecretsUpdateArgs["data"]) {
-    await this.firebaseService.updateItemByField(
-      "userCollection",
-      { field: "resetToken", value: resetToken },
-      data,
+    await this.firebaseService.updateItem(
+      "secretCollection",
+      { condition: { field: "resetToken", value: resetToken } },
+      { dto: data },
     );
   }
 
@@ -81,8 +106,7 @@ export class FirebaseUserService {
     ]);
 
     await this.firebaseService.deleteByField("userCollection", {
-      field: "id",
-      value: id,
+      condition: { field: "id", value: id },
     });
   }
 }
