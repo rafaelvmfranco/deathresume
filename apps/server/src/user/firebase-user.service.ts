@@ -1,6 +1,5 @@
-import { HttpException, Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
-import { UserDto, UserWithSecrets } from "@reactive-resume/dto";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { UserDto } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
@@ -77,13 +76,17 @@ export class FirebaseUserService {
     return userByName;
   }
 
-  async create(data: Prisma.UserCreateInput) {
-    return await this.firebaseService.create("userCollection", data, {
-      includeSecret: true,
-    });
+  async create(data: UserDto) {
+    return await this.firebaseService.create(
+      "userCollection",
+      { dto: data },
+      {
+        includeSecret: true,
+      },
+    );
   }
 
-  async updateByEmail(email: string, data: Prisma.UserUpdateArgs["data"]) {
+  async updateByEmail(email: string, data: UserDto) {
     return await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "email", value: email } },
@@ -91,7 +94,7 @@ export class FirebaseUserService {
     );
   }
 
-  async updateByResetToken(resetToken: string, data: Prisma.SecretsUpdateArgs["data"]) {
+  async updateByResetToken(resetToken: string, data: UserDto) {
     await this.firebaseService.updateItem(
       "secretCollection",
       { condition: { field: "resetToken", value: resetToken } },

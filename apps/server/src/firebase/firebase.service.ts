@@ -84,7 +84,7 @@ export class FirebaseService {
       ? null
       : querySnapshot.docs.map(
           (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
-        );
+        )[0];
   }
 
   async findFirst(
@@ -104,7 +104,7 @@ export class FirebaseService {
 
     return querySnapshot.docs.map(
       (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
-    );
+    )[0];
   }
 
   async findMany(collection: CollectionName, condition?: SearchCondition) {
