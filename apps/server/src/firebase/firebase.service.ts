@@ -1,20 +1,25 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { app, firestore } from "firebase-admin";
 
-type CollectionName = "userCollection" | "planCollection" | "resumeCollection" | "secretCollection";
+type CollectionName =
+  | "userCollection"
+  | "planCollection"
+  | "resumeCollection"
+  | "secretCollection"
+  | "usageCollection"
+  | "subcriptionCollection";
+
+type Condition = {
+  field: string;
+  value: any;
+};
 
 type SearchCondition = {
-  condition: {
-    field: string;
-    value: any;
-  };
+  condition: Condition;
 };
 
 type SearchConditions = {
-  conditions: {
-    field: string;
-    value: any;
-  }[];
+  conditions: Condition[];
 };
 
 type OrderBy = {
@@ -28,6 +33,10 @@ type Select = {
   select?: string[];
 };
 
+type Secret = {
+  includeSecret?: boolean;
+};
+
 @Injectable()
 export class FirebaseService {
   db: FirebaseFirestore.Firestore;
@@ -36,6 +45,7 @@ export class FirebaseService {
   planCollection: FirebaseFirestore.CollectionReference;
   resumeCollection: FirebaseFirestore.CollectionReference;
   secretCollection: FirebaseFirestore.CollectionReference;
+  usageCollection: FirebaseFirestore.CollectionReference;
 
   constructor(@Inject("FIREBASE_APP") private firebaseApp: app.App) {
     this.db = firebaseApp.firestore();
@@ -44,44 +54,47 @@ export class FirebaseService {
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
     this.secretCollection = this.db.collection("secrets");
+    this.usageCollection = this.db.collection("usage");
   }
 
-  async create(collection: CollectionName, {dto}: any) {
-    return await this[collection].add(dto);
+  async create<T>(
+    collection: CollectionName,
+    { dto }: { dto: T },
+    { includeSecret }: Partial<Secret> = { includeSecret: false },
+  ) {
+    return await this[collection as keyof FirebaseService].add(dto);
   }
 
   async findUnique(
     collection: CollectionName,
     { condition }: SearchCondition,
-    { select }: Partial<Select> = { select: [] },
+    { select }: Select = { select: [] },
+    { includeSecret }: Secret = { includeSecret: false },
   ) {
-    let result = {};
     const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
-    await this[collection]
+
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ]
       .where(condition.field, "==", condition.value)
       .select(selectionCondition)
-      .get()
-      .then((querySnapshot) => {
-        if (querySnapshot.size > 1) {
-          result = {};
-          return;
-        }
-        querySnapshot.forEach((doc: any) => {
-          result = doc.data();
-        });
-      });
+      .get();
 
-    return result;
+    return querySnapshot.size > 1
+      ? null
+      : querySnapshot.docs.map(
+          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+        );
   }
 
   async findFirst(
     collection: CollectionName,
     { conditions }: SearchConditions,
-    { select }: Partial<Select> = {},
+    { select }: Select = { select: [] },
   ) {
     const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
 
-    let query: firestore.Query = this[collection];
+    let query: firestore.Query = this[collection as keyof FirebaseService];
 
     conditions.forEach((condition) => {
       query = query.where(condition.field, "==", condition.value);
@@ -89,7 +102,21 @@ export class FirebaseService {
 
     const querySnapshot = await query.select(selectionCondition).limit(1).get();
 
-    return querySnapshot.docs.map((doc) => doc.data());
+    return querySnapshot.docs.map(
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+    );
+  }
+
+  async findMany(collection: CollectionName, condition?: SearchCondition) {
+    let query: firestore.Query = this[collection as keyof FirebaseService];
+
+    if (condition) {
+      query = query.where(condition.condition.field, "==", condition.condition.value);
+    }
+
+    return (await query.get()).docs.map(
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+    );
   }
 
   async findManyAndOrder(
@@ -97,14 +124,25 @@ export class FirebaseService {
     { condition }: SearchCondition,
     { order }: OrderBy,
   ) {
-    return await this[collection]
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ]
       .where(condition.field, "==", condition.value)
       .orderBy(order.field, order.by)
       .get();
+
+    return querySnapshot.docs.map(
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+    );
   }
 
-  async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
-    const data = await this.findUnique(collection, condition, select);
+  async findUniqueOrThrow(
+    collection: CollectionName,
+    condition: SearchCondition,
+    select?: Select,
+    includeSecret?: Secret,
+  ) {
+    const data = await this.findUnique(collection, condition, select, includeSecret);
     if (!data) {
       throw new Error("Data not found");
     }
@@ -123,36 +161,54 @@ export class FirebaseService {
     return data;
   }
 
-  async updateItem(collection: CollectionName, { condition }: SearchCondition, { dto }: any) {
-    return this[collection]
+  async updateItem<T>(collection: CollectionName, { condition }: SearchCondition, { dto }: {dto:}) {
+    let updatedItem: T | null = null
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ]
       .where(condition.field, "==", condition.value)
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach(async (doc: any) => {
-          return await doc.ref.update(dto);
-        });
-      })
-      .catch((error: Error) => {
-        Logger.log(
-          `Error while updating doc with ${condition.field}=${condition.value} in ${collection}`,
-          error,
-        );
-      });
+      .get();
+
+    querySnapshot.forEach(
+      async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+        const documentRef = this[collection as keyof FirebaseService].doc(doc.id);
+        await doc.ref.update(dto);
+        updatedItem = await documentRef.get().data();
+      },
+    );
+
+    return updatedItem;
+  }
+
+  async increaseFieldByNumber(
+    collection: CollectionName,
+    condition: SearchCondition,
+    { dto }: { dto: Condition },
+  ) {
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ]
+      .where(dto.field, "==", dto.value)
+      .get();
+
+      querySnapshot.forEach(
+        async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+          const currentUsage = doc.data()[dto.field] || 0;
+          const newDto = { ...doc.data(), [dto.field]: currentUsage + dto.value };
+          await doc.ref.update(newDto);
+        },
+      );
   }
 
   async deleteByField(collection: CollectionName, { condition }: SearchCondition) {
-    return await this[collection]
+    this[collection as keyof FirebaseService]
       .where(condition.field, "==", condition.value)
       .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach(async (doc: any) => {
-          return await doc.ref.delete();
-        });
-      })
-      .catch((error: Error) => {
-        Logger.log(
-          `Error while deleting doc with ${condition.field}=${condition.value} in ${collection}`,
-          error,
+      .then((querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData>) => {
+        querySnapshot.forEach(
+          async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+            await doc.ref.delete();
+          },
         );
       });
   }
