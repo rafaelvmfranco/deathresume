@@ -8,4 +8,4 @@ import { FirebaseModule } from "../firebase/firebase.module";
   providers: [UsageService],
   exports: [UsageService],
 })
-export class MailModule {}
+export class UsageModule {}
