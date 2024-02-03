@@ -20,6 +20,7 @@ import { UserModule } from "./user/user.module";
 import { UtilsModule } from "./utils/utils.module";
 import { PlanModule } from "./plan/plan.module";
 import { UsageModule } from "./usage/usage.module";
+import { SubcriptionModule } from "./subcription/subcription.module";
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UsageModule } from "./usage/usage.module";
     ContributorsModule,
     PlanModule,
     UsageModule,
+    SubcriptionModule,
 
     // Static Assets
     ServeStaticModule.forRoot({

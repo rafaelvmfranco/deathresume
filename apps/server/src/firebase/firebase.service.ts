@@ -161,7 +161,7 @@ export class FirebaseService {
     return data;
   }
 
-  async updateItem<T>(collection: CollectionName, { condition }: SearchCondition, { dto }: {dto:}) {
+  async updateItem<T>(collection: CollectionName, { condition }: SearchCondition, { dto }: {dto: any}) {
     let updatedItem: T | null = null
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService

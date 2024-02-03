@@ -21,6 +21,6 @@ export const subcriptionSchema = z.object({
 
 export class SubcriptionDto extends createZodDto(subcriptionSchema) {}
 
-export const subcriptionWithPlansSchema = subcriptionSchema.merge(z.object({ plan: planSchema }));
+export const subcriptionWithPlanSchema = subcriptionSchema.merge(z.object({ plan: planSchema }));
 
-export class SubcriptionWithPlans extends createZodDto(subcriptionWithPlansSchema) {}
+export class SubcriptionWithPlan extends createZodDto(subcriptionWithPlanSchema) {}

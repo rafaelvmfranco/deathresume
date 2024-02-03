@@ -65,7 +65,7 @@ async function bootstrap() {
   // Swagger (OpenAPI Docs)
   // This can be accessed by visiting {SERVER_URL}/api/docs
   const config = new DocumentBuilder()
-    .setTitle("Reactive Resume")
+    .setTitle("Death Resume")
     .setDescription(
       "Death Resume is a resume builder that's built to make the mundane tasks of creating, updating and sharing your resume as easy as 1, 2, 3.",
     )
