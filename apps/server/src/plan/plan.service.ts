@@ -20,9 +20,17 @@ export class PlanService {
   }
 
   async create(data: PlanDto) {
-    return await this.firebaseService.create(
-      "planCollection",
-      { dto: data },
-    );
+    return await this.firebaseService.create("planCollection", { dto: data });
+  }
+
+  async getFreePlanId() {
+    const plan = (await this.firebaseService.findUnique("planCollection", {
+      condition: {
+        field: "name",
+        value: "free",
+      },
+    })) as PlanDto;
+
+    return plan.id;
   }
 }
