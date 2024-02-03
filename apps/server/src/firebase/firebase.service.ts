@@ -33,10 +33,6 @@ type Select = {
   select?: string[];
 };
 
-type Secret = {
-  includeSecret?: boolean;
-};
-
 @Injectable()
 export class FirebaseService {
   db: FirebaseFirestore.Firestore;
@@ -60,7 +56,6 @@ export class FirebaseService {
   async create<T>(
     collection: CollectionName,
     { dto }: { dto: T },
-    { includeSecret }: Partial<Secret> = { includeSecret: false },
   ) {
     return await this[collection as keyof FirebaseService].add(dto);
   }
@@ -68,9 +63,8 @@ export class FirebaseService {
   async findUnique(
     collection: CollectionName,
     { condition }: SearchCondition,
-    { select }: Select = { select: [] },
-    { includeSecret }: Secret = { includeSecret: false },
-  ) {
+    { select }: Select = { select: [] }
+      ) {
     const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
 
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
@@ -140,9 +134,8 @@ export class FirebaseService {
     collection: CollectionName,
     condition: SearchCondition,
     select?: Select,
-    includeSecret?: Secret,
   ) {
-    const data = await this.findUnique(collection, condition, select, includeSecret);
+    const data = await this.findUnique(collection, condition, select);
     if (!data) {
       throw new Error("Data not found");
     }
