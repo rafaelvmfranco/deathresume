@@ -33,7 +33,7 @@ export class ResumeService {
 
   async create(userId: string, createResumeDto: CreateResumeDto) {
 
-    const userData = await this.firebaseService.findUniqueOrThrow(
+    const { name, email, picture } = await this.firebaseService.findUniqueOrThrow(
       "userCollection",
       { condition: { field: "id", value: userId } },
       { select: ["name", "email", "picture"] },
@@ -128,7 +128,7 @@ export class ResumeService {
 
   async findOneByUsernameSlug(username: string, slug: string, userId?: string) {
 
-    const resume = this.firebaseService.findFirstOrThrow("resumeCollection", {
+    const resume = await this.firebaseService.findFirstOrThrow("resumeCollection", {
       conditions: [
         {
           field: "user",
