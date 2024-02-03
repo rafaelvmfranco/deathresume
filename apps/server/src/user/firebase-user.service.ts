@@ -1,9 +1,10 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { UserDto } from "@reactive-resume/dto";
+import { UserDto, SecretsDto } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { FirebaseService } from "../firebase/firebase.service";
+import { SecretService } from "../secret/secret.service";
 
 @Injectable()
 export class FirebaseUserService {
@@ -12,48 +13,43 @@ export class FirebaseUserService {
   constructor(
     private readonly redisService: RedisService,
     private readonly firebaseService: FirebaseService,
+    private readonly secretService: SecretService
   ) {
     this.redis = this.redisService.getClient();
   }
 
   async findOneById(id: string) {
-    const user = await this.firebaseService.findUniqueOrThrow(
-      "userCollection",
-      {
-        condition: {
-          field: "id",
-          value: id,
-        },
-      },
-      undefined,
-      {
-        includeSecret: true,
-      },
-    );
+    const secrets = await this.secretService.getSecretByUserId(id);
 
-    if (!(user as any).secrets) {
+    if (!secrets) {
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
     }
 
-    return user;
+    const user = (await this.firebaseService.findUniqueOrThrow("userCollection", {
+      condition: {
+        field: "id",
+        value: id,
+      },
+    })) as UserDto;
+
+    return { ...user, secrets };
   }
 
   async findOneByIdentifier(identifier: string) {
-    const user = await this.firebaseService.findUnique(
-      "userCollection",
-      {
-        condition: {
-          field: "email",
-          value: identifier,
-        },
+    const userByEmail = (await this.firebaseService.findUnique("userCollection", {
+      condition: {
+        field: "email",
+        value: identifier,
       },
-      undefined,
-      {
-        includeSecret: true,
-      },
-    );
+    })) as UserDto;
 
-    if (user) return user;
+    const secrets = await this.secretService.getSecretByUserId(userByEmail.id);
+
+    if (!secrets) {
+      throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
+    }
+
+    if (userByEmail) return { ...userByEmail, secrets };
 
     const userByName = await this.firebaseService.findUniqueOrThrow(
       "userCollection",
@@ -63,27 +59,24 @@ export class FirebaseUserService {
           value: identifier,
         },
       },
-      undefined,
-      {
-        includeSecret: true,
-      },
-    );
+    ) as UserDto;
 
-    if (!(userByName as any).secrets) {
+    const secretsByName = await this.secretService.getSecretByUserId(userByName.id);
+
+    if (secretsByName) {                                                                                                            
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
     }
 
-    return userByName;
+    return {...userByName, secrets: secretsByName};
   }
 
   async create(data: UserDto) {
-    return await this.firebaseService.create(
+    const user = await this.firebaseService.create(
       "userCollection",
       { dto: data },
-      {
-        includeSecret: true,
-      },
     );
+    const secrets = await this.secretService.addSecret(user.id, "");
+    return { ...user, secrets };
   }
 
   async updateByEmail(email: string, data: UserDto) {
