@@ -48,7 +48,7 @@ export const VerifyEmailPage = () => {
         <h2 className="text-2xl font-semibold tracking-tight">{t`Verify your email address`}</h2>
         <p className="leading-relaxed opacity-75">
           <Trans>
-            You should have received an email from <strong>Reactive Resume</strong> with a link to
+            You should have received an email from <strong>Death Resume</strong> with a link to
             verify your account.
           </Trans>
         </p>
