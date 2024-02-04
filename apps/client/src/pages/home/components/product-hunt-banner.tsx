@@ -24,7 +24,7 @@ export const ProductHuntBanner = () => {
         className="flex w-screen items-center justify-center gap-x-1.5 bg-orange-600 text-xs font-bold leading-relaxed text-orange-50"
       >
         <RocketLaunch weight="bold" size={12} />
-        <span>Support Reactive Resume on Product Hunt today!</span>
+        <span>Support Death Resume on Product Hunt today!</span>
       </motion.div>
     </a>
   );
