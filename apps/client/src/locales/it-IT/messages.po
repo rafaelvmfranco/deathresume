@@ -1653,8 +1653,8 @@ msgid "You have the option to <0>obtain your own OpenAI API key</0>. This key em
 msgstr "Ha la possibilità di <0>ottenere una propria chiave API OpenAI</0>. Questa chiave le consente di sfruttare l'API come ritiene opportuno. In alternativa, se desidera disattivare completamente le funzioni AI in Reactive Resume, può semplicemente rimuovere la chiave dalle sue impostazioni."
 
 #: apps/client/src/pages/auth/verify-email/page.tsx:50
-msgid "You should have received an email from <0>Reactive Resume</0> with a link to verify your account."
-msgstr "Dovrebbe aver ricevuto un'e-mail da <0>Reactive Resume</0> con un link per verificare il suo account."
+msgid "You should have received an email from <0>Death Resume</0> with a link to verify your account."
+msgstr "Dovrebbe aver ricevuto un'e-mail da <0>Death Resume</0> con un link per verificare il suo account."
 
 #: apps/client/src/pages/auth/forgot-password/page.tsx:49
 #: apps/client/src/pages/auth/forgot-password/page.tsx:54

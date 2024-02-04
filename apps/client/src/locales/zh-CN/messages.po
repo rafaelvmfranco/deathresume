@@ -1653,8 +1653,8 @@ msgid "You have the option to <0>obtain your own OpenAI API key</0>. This key em
 msgstr "您可以选择<0>获取您自己的 OpenAI API 密钥</0>，此密钥使您能够根据需要使用 API。或者，如果您希望完全禁用 Reactive Resume 中的 AI 功能，只需从设置中删除密钥即可。"
 
 #: apps/client/src/pages/auth/verify-email/page.tsx:50
-msgid "You should have received an email from <0>Reactive Resume</0> with a link to verify your account."
-msgstr "您应该已收到来自 <0>Reactive Resume</0> 的电子邮件，其中包含验证账户的链接。"
+msgid "You should have received an email from <0>Death Resume</0> with a link to verify your account."
+msgstr "您应该已收到来自 <0>Death Resume</0> 的电子邮件，其中包含验证账户的链接。"
 
 #: apps/client/src/pages/auth/forgot-password/page.tsx:49
 #: apps/client/src/pages/auth/forgot-password/page.tsx:54

@@ -1653,8 +1653,8 @@ msgid "You have the option to <0>obtain your own OpenAI API key</0>. This key em
 msgstr ""
 
 #: apps/client/src/pages/auth/verify-email/page.tsx:50
-msgid "You should have received an email from <0>Reactive Resume</0> with a link to verify your account."
-msgstr "Deberías haber recibido un correo electrónico de <0>Reactive Resume</0> con un enlace para verificar tu cuenta."
+msgid "You should have received an email from <0>Death Resume</0> with a link to verify your account."
+msgstr "Deberías haber recibido un correo electrónico de <0>Death Resume</0> con un enlace para verificar tu cuenta."
 
 #: apps/client/src/pages/auth/forgot-password/page.tsx:49
 #: apps/client/src/pages/auth/forgot-password/page.tsx:54

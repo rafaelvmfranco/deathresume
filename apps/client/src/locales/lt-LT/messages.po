@@ -1653,7 +1653,7 @@ msgid "You have the option to <0>obtain your own OpenAI API key</0>. This key em
 msgstr "Galite <0>gauti savo \"OpenAI\" API raktą</0>. Šis raktas suteikia jums teisę naudoti API, kaip jums atrodo tinkama. Arba, jei norite visiškai išjungti dirbtinio intelekto funkcijas programoje \"Reactive Resume\", galite tiesiog pašalinti raktą iš savo nustatymų."
 
 #: apps/client/src/pages/auth/verify-email/page.tsx:50
-msgid "You should have received an email from <0>Reactive Resume</0> with a link to verify your account."
+msgid "You should have received an email from <0>Death Resume</0> with a link to verify your account."
 msgstr "Turėjote gauti el. laišką iš <0>\"Reactive Resume\"</0> su nuoroda, kad patvirtintumėte paskyrą."
 
 #: apps/client/src/pages/auth/forgot-password/page.tsx:49

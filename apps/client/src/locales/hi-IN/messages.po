@@ -1653,8 +1653,8 @@ msgid "You have the option to <0>obtain your own OpenAI API key</0>. This key em
 msgstr "आपके पास <0>अपनी स्वयं की OpenAI API कुंजी प्राप्त करने का विकल्प है</0>. यह कुंजी आपको अपनी इच्छानुसार एपीआई का लाभ उठाने का अधिकार देती है। वैकल्पिक रूप से, यदि आप रिएक्टिव रेज़्यूमे में एआई सुविधाओं को पूरी तरह से अक्षम करना चाहते हैं, तो आप बस अपनी सेटिंग्स से कुंजी को हटा सकते हैं।"
 
 #: apps/client/src/pages/auth/verify-email/page.tsx:50
-msgid "You should have received an email from <0>Reactive Resume</0> with a link to verify your account."
-msgstr "आपको अपने खाते को सत्यापित करने के लिंक के साथ <0>रिएक्टिव रेज़्यूमे</0> से एक ईमेल प्राप्त होना चाहिए था।"
+msgid "You should have received an email from <0>Death Resume</0>with a link to verify your account."
+msgstr "आपको अपने खाते को सत्यापित करने के लिंक के साथ <0>Death Resume</0> से एक ईमेल प्राप्त होना चाहिए था।"
 
 #: apps/client/src/pages/auth/forgot-password/page.tsx:49
 #: apps/client/src/pages/auth/forgot-password/page.tsx:54
