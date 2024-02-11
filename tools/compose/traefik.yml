@@ -22,21 +22,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Storage (for image uploads)
-  minio:
-    image: minio/minio
-    restart: unless-stopped
-    command: server /data
-    volumes:
-      - minio_data:/data
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.storage.rule=Host(`storage.example.com`)
-      - traefik.http.services.storage.loadbalancer.server.port=9000
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -61,7 +46,6 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
-      - minio
       - redis
       - chrome
     environment:
@@ -87,15 +71,6 @@ services:
       # -- Emails --
       MAIL_FROM: noreply@example.com
       # SMTP_URL: smtp://user:pass@smtp:587 # Optional
-
-      # -- Storage (Minio) --
-      STORAGE_ENDPOINT: minio
-      STORAGE_PORT: 9000
-      STORAGE_REGION: us-east-1 # Optional
-      STORAGE_BUCKET: default
-      STORAGE_ACCESS_KEY: minioadmin
-      STORAGE_SECRET_KEY: minioadmin
-      STORAGE_USE_SSL: false
 
       # -- Cache (Redis) --
       REDIS_URL: redis://default:password@redis:6379
@@ -138,5 +113,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
-  minio_data:
   postgres_data:

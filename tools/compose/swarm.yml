@@ -26,28 +26,6 @@ services:
       restart_policy:
         condition: on-failure
 
-  # Storage (for image uploads)
-  minio:
-    image: minio/minio
-    command: server /data
-    networks:
-      - reactive_resume_network
-    volumes:
-      - minio_data:/data
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.storage.rule=Host(`storage.example.com`)
-        - traefik.http.routers.storage.entrypoints=websecure
-        - traefik.http.routers.storage.tls.certresolver=letsencrypt
-        - traefik.http.services.storage.loadbalancer.server.port=9000
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -106,15 +84,6 @@ services:
       # -- Emails --
       MAIL_FROM: noreply@example.com
       # SMTP_URL: smtp://user:pass@smtp:587 # Optional
-
-      # -- Storage (Minio) --
-      STORAGE_ENDPOINT: minio
-      STORAGE_PORT: 9000
-      STORAGE_REGION: us-east-1 # Optional
-      STORAGE_BUCKET: default
-      STORAGE_ACCESS_KEY: minioadmin
-      STORAGE_SECRET_KEY: minioadmin
-      STORAGE_USE_SSL: false
 
       # -- Cache (Redis) --
       REDIS_URL: redis://default:password@redis:6379
@@ -184,7 +153,6 @@ services:
         constraints: [node.role == manager]
 
 volumes:
-  minio_data:
   redis_data:
   postgres_data:
   letsencrypt_data:

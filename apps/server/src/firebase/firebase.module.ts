@@ -1,6 +1,7 @@
 import { Module, Logger } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import * as admin from "firebase-admin";
+import type {} from "multer";
 
 import { FirebaseService } from "./firebase.service";
 
