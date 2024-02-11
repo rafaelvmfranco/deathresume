@@ -23,22 +23,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Storage (for image uploads)
-  minio:
-    image: minio/minio
-    restart: unless-stopped
-    command: server /data
-    ports:
-      - ${STORAGE_PORT:-9000}:9000
-      - 9001:9001 # Minio Console (Optional)
-    volumes:
-      - minio_data:/data
-    environment:
-      MINIO_ADDRESS: :9000
-      MINIO_CONSOLE_ADDRESS: :9001
-      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:-minioadmin}
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -63,6 +47,5 @@ services:
       - redis_data:/data
 
 volumes:
-  minio_data:
   redis_data:
   postgres_data:
