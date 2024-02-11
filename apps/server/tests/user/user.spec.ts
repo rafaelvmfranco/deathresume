@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { faker } from "@faker-js/faker";
 import { AppModule } from "../../src/app.module";
