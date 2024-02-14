@@ -8,7 +8,7 @@ import { getFontUrls } from "@reactive-resume/utils";
 import { ErrorMessage } from "@reactive-resume/utils";
 import retry from "async-retry";
 import { PDFDocument } from "pdf-lib";
-import { connect } from "puppeteer";
+import puppeteer, { connect } from "puppeteer";
 
 import { Config } from "../config/schema";
 import { FirebaseService } from "../firebase/firebase.service";
@@ -34,7 +34,9 @@ export class PrinterService {
 
   private async getBrowser() {
     try {
-      return await connect({ browserWSEndpoint: this.browserURL });
+      const browser = await puppeteer.launch({ headless: false });
+      const wsEndpoint = browser.wsEndpoint();
+      return await connect({ browserWSEndpoint: wsEndpoint });
     } catch (error) {
       throw new InternalServerErrorException(ErrorMessage.InvalidBrowserConnection, error.message);
     }
@@ -47,7 +49,6 @@ export class PrinterService {
     return version;
   }
 
-  //buggy
   async printResume(resume: ResumeDto) {
     return this.utils.getCachedOrSet(
       `user:${resume.userId}:storage:resumes:${resume.id}`,
@@ -109,14 +110,14 @@ export class PrinterService {
       if ([publicUrl, storageUrl].some((url) => url.includes("localhost"))) {
         // Switch client URL from `localhost` to `host.docker.internal` in development
         // This is required because the browser is running in a container and the client is running on the host machine.
-        url = url.replace("localhost", "host.docker.internal");
+        url = url.replace("localhost", "0.0.0.0");
 
         await page.setRequestInterception(true);
 
         // Intercept requests of `localhost` to `host.docker.internal` in development
         page.on("request", (request) => {
           if (request.url().startsWith(storageUrl)) {
-            const modifiedUrl = request.url().replace("localhost", `host.docker.internal`);
+            const modifiedUrl = request.url().replace("localhost", `0.0.0.0`);
 
             request.continue({ url: modifiedUrl });
           } else {
@@ -199,13 +200,6 @@ export class PrinterService {
         resume.id,
       );
 
-      const resumeUrlFirebase = await this.firebaseService.uploadToBucket(
-        resume.userId,
-        "resumes",
-        buffer,
-        resume.id,
-      );
-
       // Close all the pages and disconnect from the browser
       await page.close();
       browser.disconnect();
@@ -219,28 +213,24 @@ export class PrinterService {
   async generatePreview(resume: ResumeDto) {
     const browser = await this.getBrowser();
     const page = await browser.newPage();
- 
+
     let url = this.utils.getUrl();
-    this.logger.log("url", url)
     const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
     const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
-
     if ([publicUrl, storageUrl].some((url) => url.includes("localhost"))) {
       // Switch client URL from `localhost` to `host.docker.internal` in development
       // This is required because the browser is running in a container and the client is running on the host machine.
-      url = url.replace("localhost", "host.docker.internal");
+      url = url.replace("localhost", "0.0.0.0");
 
       await page.setRequestInterception(true);
 
       // Intercept requests of `localhost` to `host.docker.internal` in development
       page.on("request", (request) => {
         if (request.url().startsWith(storageUrl)) {
-          const modifiedUrl = request.url().replace("localhost", `host.docker.internal`);
+          const modifiedUrl = request.url().replace("localhost", `0.0.0.0`);
           request.continue({ url: modifiedUrl });
-        
+
         } else {
-
-
           request.continue();
         }
       });
@@ -252,10 +242,9 @@ export class PrinterService {
     }, resume.data);
 
     await page.setViewport({ width: 794, height: 1123 });
-
     
+
     await page.goto(`${url}/artboard/preview`, { waitUntil: "networkidle0" });
-this.logger.log("I am here")
     // Save the JPEG to storage and return the URL
     // Store the URL in cache for future requests, under the previously generated hash digest
     const buffer = await page.screenshot({ quality: 80, type: "jpeg" });
@@ -268,19 +257,10 @@ this.logger.log("I am here")
       resume.id,
     );
 
-    this.logger.log("previewUrl", previewUrl)
-
-    const previewUrlFirebase = await this.firebaseService.uploadToBucket(
-      resume.userId,
-      "previews",
-      buffer,
-      resume.id,
-    );
-
     // Close all the pages and disconnect from the browser
     await page.close();
     browser.disconnect();
 
     return previewUrl;
-  }
+    }
 }
