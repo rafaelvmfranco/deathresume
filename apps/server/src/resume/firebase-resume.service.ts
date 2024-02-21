@@ -233,8 +233,8 @@ export class ResumeService {
       this.redis.del(`user:${userId}:resume:${id}`),
 
       // Remove files in bucket, and their cached keys
-      this.firebaseService.deleteFileFromBucket(userId, "resumes", id),
-      this.firebaseService.deleteFileFromBucket(userId, "previews", id),
+      this.firebaseService.deleteObject(userId, "resumes", id),
+      this.firebaseService.deleteObject(userId, "previews", id),
     ]);
 
     //return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });
@@ -251,11 +251,15 @@ export class ResumeService {
 
     // Update statistics: increment the number of downloads by 1
     if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:downloads`);
-
+    Logger.log("printResume, url:", url)
     return url;
   }
 
-  printPreview(resume: ResumeDto) {
-    return this.printerService.printPreview(resume);
+  async printPreview(resume: ResumeDto) {
+    
+    const a = await this.printerService.printPreview(resume);
+    Logger.log("printPreview, a:", a);
+    return a;
+
   }
 }
