@@ -71,7 +71,7 @@ export class UserService {
   }
 
   async deleteOneById(id: string) {
-    await Promise.all([this.redis.del(`user:${id}:*`), this.firebaseService.deleteBucketFolderById(id)]);
+    await Promise.all([this.redis.del(`user:${id}:*`), this.firebaseService.deleteFolder(id)]);
 
     return await this.prisma.user.delete({ where: { id } });
   }

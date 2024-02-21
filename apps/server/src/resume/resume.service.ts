@@ -186,8 +186,8 @@ export class ResumeService {
       this.redis.del(`user:${userId}:resume:${id}`),
 
       // Remove files in bucket, and their cached keys
-      this.firebaseService.deleteFileFromBucket(userId, "resumes", id),
-      this.firebaseService.deleteFileFromBucket(userId, "previews", id),
+      this.firebaseService.deleteObject(userId, "resumes", id),
+      this.firebaseService.deleteObject(userId, "previews", id),
     ]);
 
     return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });
