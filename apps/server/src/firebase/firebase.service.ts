@@ -1,6 +1,8 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import admin, { firestore } from "firebase-admin";
+import { getDownloadURL } from 'firebase-admin/storage';
+
 import { createId } from "@paralleldrive/cuid2";
 import { RedisService } from "@songkeys/nestjs-redis";
 import { Redis } from "ioredis";
@@ -265,16 +267,13 @@ export class FirebaseService {
           .toBuffer();
       }
 
-      const file = await this.bucket.file(filepath);
-      await file.save(buffer);
-      await file.setMetadata(metadata);
+      const fileRef = await this.bucket.file(filepath);
+      await fileRef.save(buffer);
+      await fileRef.setMetadata(metadata);
+      
+      const downloadURL= await getDownloadURL(fileRef);
 
-      const signedUrl = await file.getSignedUrl({
-        action: "read",
-        expires: new Date().getTime() + 24 * 60000,
-      });
-
-      return signedUrl[0];
+      return downloadURL;
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException("There was an error while uploading the file.");
