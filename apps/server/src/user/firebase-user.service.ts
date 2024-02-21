@@ -98,7 +98,7 @@ export class FirebaseUserService {
   async deleteOneById(id: string) {
     await Promise.all([
       this.redis.del(`user:${id}:*`),
-      this.firebaseService.deleteBucketFolderById(id),
+      this.firebaseService.deleteFolder(id),
     ]);
 
     await this.firebaseService.deleteByField("userCollection", {

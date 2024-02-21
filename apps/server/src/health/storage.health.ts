@@ -13,7 +13,7 @@ export class StorageHealthIndicator extends HealthIndicator {
 
   async isHealthy(): Promise<HealthIndicatorResult> {
     try {            
-      await this.firebaseService.doesBucketExist();
+      await this.firebaseService.bucketExists();
       return this.getStatus("storage", true);
     } catch (error) {
       return this.getStatus("storage", false, { message: error.message });
