@@ -1,5 +1,13 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { app, firestore } from "firebase-admin";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import admin, { firestore } from "firebase-admin";
+import { createId } from "@paralleldrive/cuid2";
+import { RedisService } from "@songkeys/nestjs-redis";
+import { Redis } from "ioredis";
+import sharp from "sharp";
+
+import { Config } from "../config/schema";
+import {} from "firebase-admin";
 
 type CollectionName =
   | "userCollection"
@@ -33,38 +41,49 @@ type Select = {
   select?: string[];
 };
 
+type ImageUploadType = "pictures" | "previews";
+type DocumentUploadType = "resumes";
+
+type UploadType = ImageUploadType | DocumentUploadType;
+
 @Injectable()
 export class FirebaseService {
-  db: FirebaseFirestore.Firestore;
-  bucket: any;
+  private readonly db: FirebaseFirestore.Firestore;
   userCollection: FirebaseFirestore.CollectionReference;
   planCollection: FirebaseFirestore.CollectionReference;
   resumeCollection: FirebaseFirestore.CollectionReference;
   secretCollection: FirebaseFirestore.CollectionReference;
   usageCollection: FirebaseFirestore.CollectionReference;
 
-  constructor(@Inject("FIREBASE_APP") private firebaseApp: app.App) {
-    this.db = firebaseApp.firestore();
-    this.bucket = firebaseApp.storage().bucket();
+  bucket: any;
+  storageBucket: string;
+  redis: Redis;
+
+  constructor(
+    private readonly redisService: RedisService,
+    private readonly configService: ConfigService<Config>,
+  ) {
+    this.db = admin.firestore();
     this.userCollection = this.db.collection("users");
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
     this.secretCollection = this.db.collection("secrets");
     this.usageCollection = this.db.collection("usage");
+
+    this.storageBucket = this.configService.getOrThrow<string>("STORAGE_BUCKET");
+    this.bucket = admin.storage().bucket(this.storageBucket);
+    this.redis = this.redisService.getClient();
   }
 
-  async create<T>(
-    collection: CollectionName,
-    { dto }: { dto: T },
-  ) {
+  async create<T>(collection: CollectionName, { dto }: { dto: T }) {
     return await this[collection as keyof FirebaseService].add(dto);
   }
 
   async findUnique(
     collection: CollectionName,
     { condition }: SearchCondition,
-    { select }: Select = { select: [] }
-      ) {
+    { select }: Select = { select: [] },
+  ) {
     const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
 
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
@@ -130,11 +149,7 @@ export class FirebaseService {
     );
   }
 
-  async findUniqueOrThrow(
-    collection: CollectionName,
-    condition: SearchCondition,
-    select?: Select,
-  ) {
+  async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
     const data = await this.findUnique(collection, condition, select);
     if (!data) {
       throw new Error("Data not found");
@@ -154,8 +169,12 @@ export class FirebaseService {
     return data;
   }
 
-  async updateItem<T>(collection: CollectionName, { condition }: SearchCondition, { dto }: {dto: any}) {
-    let updatedItem: T | null = null
+  async updateItem<T>(
+    collection: CollectionName,
+    { condition }: SearchCondition,
+    { dto }: { dto: any },
+  ) {
+    let updatedItem: T | null = null;
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService
     ]
@@ -175,22 +194,22 @@ export class FirebaseService {
 
   async increaseFieldByNumber(
     collection: CollectionName,
-    condition: SearchCondition,
+    { condition }: SearchCondition,
     { dto }: { dto: Condition },
   ) {
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService
     ]
-      .where(dto.field, "==", dto.value)
+      .where(condition.field, "==", condition.value)
       .get();
 
-      querySnapshot.forEach(
-        async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
-          const currentUsage = doc.data()[dto.field] || 0;
-          const newDto = { ...doc.data(), [dto.field]: currentUsage + dto.value };
-          await doc.ref.update(newDto);
-        },
-      );
+    querySnapshot.forEach(
+      async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+        const currentUsage = doc.data()[dto.field] || 0;
+        const newDto = { ...doc.data(), [dto.field]: currentUsage + dto.value };
+        await doc.ref.update(newDto);
+      },
+    );
   }
 
   async deleteByField(collection: CollectionName, { condition }: SearchCondition) {
@@ -206,19 +225,8 @@ export class FirebaseService {
       });
   }
 
-  async uploadToBucket(userId: string, filepath: string, buffer: Buffer, itemId: string) {
-    const filename = `${userId}/${filepath}/${itemId}.pdf`;
-    await this.bucket.upload(filename).save(buffer);
-  }
-
-  async deleteFileFromBucket(userId: string, filepath: string, id: string) {}
-
-  deleteBucketFolderById(id: string) {
-    return this.bucket.deleteFolder(id);
-  }
-
-  async doesBucketExist() {
-    await this.bucket.exists();
+  async bucketExists() {
+    await Promise.all([this.bucket.exists(), this.bucket.getFiles()]);
   }
 
   async areAllCollectionsAvailable() {
@@ -227,10 +235,77 @@ export class FirebaseService {
       this.planCollection.get(),
       this.resumeCollection.get(),
       this.secretCollection.get(),
+      this.usageCollection.get(),
     ]);
   }
 
-  async uploadObject(userId: string, arg1: string, buffer: Buffer, userId1: string) {
-    throw new Error("Method not implemented.");
+  async uploadObject(
+    userId: string,
+    type: UploadType,
+    buffer: Buffer,
+    filename: string = createId(),
+  ) {
+    const extension = type === "resumes" ? "pdf" : "jpg";
+    const filepath = `${userId}/${type}/${filename}.${extension}`;
+
+    const metadata =
+      extension === "jpg"
+        ? { "Content-Type": "image/jpeg" }
+        : {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename=${filename}.${extension}`,
+          };
+
+    try {
+      if (extension === "jpg") {
+        // If the uploaded file is an image, use sharp to resize the image to a maximum width/height of 600px
+        buffer = await sharp(buffer)
+          .resize({ width: 600, height: 600, fit: sharp.fit.outside })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+      }
+
+      const file = await this.bucket.file(filepath);
+      await file.save(buffer);
+      await file.setMetadata(metadata);
+
+      const signedUrl = await file.getSignedUrl({
+        action: "read",
+        expires: new Date().getTime() + 24 * 60000,
+      });
+
+      return signedUrl[0];
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException("There was an error while uploading the file.");
+    }
+  }
+
+  async deleteObject(userId: string, type: UploadType, filename: string) {
+    const extension = type === "resumes" ? "pdf" : "jpg";
+    const path = `${userId}/${type}/${filename}.${extension}`;
+
+    try {
+      return await Promise.all([
+        this.redis.del(`user:${userId}:storage:${type}:${filename}`),
+        this.bucket.delete({
+          prefix: path,
+        }),
+      ]);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `There was an error while deleting the document at the specified path: ${path}.`,
+      );
+    }
+  }
+
+  async deleteFolder(prefix: string) {
+    try {
+      return await this.bucket.deleteFolder(prefix);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `There was an error while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
+      );
+    }
   }
 }

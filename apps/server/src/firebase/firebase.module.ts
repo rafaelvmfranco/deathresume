@@ -26,7 +26,7 @@ const firebaseProvider = {
     return admin.initializeApp({
       credential: admin.credential.cert(firebaseConfig),
       databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
-      storageBucket: `${firebaseConfig.projectId}.appspot.com`,
+      storageBucket: configService.get<string>("STORAGE_BUCKET"),
     })
   },
 };
