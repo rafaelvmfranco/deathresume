@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { t } from "@lingui/macro";
 import {
   ArrowClockwise,
@@ -160,7 +159,6 @@ export const BuilderToolbar = () => {
         </Tooltip>
 
         <Tooltip content={t`Download PDF`}>
-          {/* <a href={downloadUrl} download="my-file"> */}
           <Button
             size="icon"
             variant="ghost"
@@ -170,7 +168,6 @@ export const BuilderToolbar = () => {
           >
             {loading ? <CircleNotch className="animate-spin" /> : <FilePdf />}
           </Button>
-          {/* </a> */}
         </Tooltip>
       </div>
     </motion.div>
