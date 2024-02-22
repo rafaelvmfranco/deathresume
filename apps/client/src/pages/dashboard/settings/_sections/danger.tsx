@@ -45,14 +45,16 @@ export const DangerZoneSettings = () => {
 
     // On the second click, delete the account
     if (count === 1) {
-      await Promise.all([deleteUser, logout]);
+      await Promise.all([deleteUser(), logout()]);
 
       toast({
         variant: "success",
         title: t`Your account and all your data has been deleted successfully. Goodbye!`,
       });
 
-      navigate("/");
+      await (async () => {
+        navigate("/");
+      })();
     }
   };
 
