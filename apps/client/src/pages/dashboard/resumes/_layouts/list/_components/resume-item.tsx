@@ -160,7 +160,7 @@ export const ResumeListItem = ({ resume }: Props) => {
                   loading="lazy"
                   alt={resume.title}
                   className="aspect-[1/1.4142] w-60 rounded-sm object-cover"
-                  src={`${url}?cache=${new Date().getTime()}`}
+                  src={`${url}`}
                 />
               )}
             </AnimatePresence>

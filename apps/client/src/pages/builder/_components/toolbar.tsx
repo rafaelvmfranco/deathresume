@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { t } from "@lingui/macro";
 import {
   ArrowClockwise,
@@ -33,17 +34,34 @@ export const BuilderToolbar = () => {
 
   const { printResume, loading } = usePrintResume();
 
+  const downloadPdf = async (url: string, id: string) => {
+    fetch(url).then((response) => {
+      response
+        .blob()
+        .then((blob) => {
+          const fileURL = window.URL.createObjectURL(blob);
+
+          let alink = document.createElement("a");
+          alink.href = fileURL;
+          alink.download = `${id}.pdf`;
+          alink.click();
+        })
+        .catch((error) => {
+          console.log("error", error);
+        });
+    });
+  };
+
   const onPrint = async () => {
     const { url } = await printResume({ id });
 
-    const openInNewTab = (url: string) => {
-      const win = window.open(url, "_blank");
-      if (win) win.focus();
-    };
-
-    openInNewTab(url);
+    await downloadPdf(url, id);
   };
 
+  const openInNewTab = (url: string) => {
+    const win = window.open(url, "_blank");
+    if (win) win.focus();
+  };
   const onCopy = async () => {
     const { url } = await printResume({ id });
     await navigator.clipboard.writeText(url);
@@ -142,6 +160,7 @@ export const BuilderToolbar = () => {
         </Tooltip>
 
         <Tooltip content={t`Download PDF`}>
+          {/* <a href={downloadUrl} download="my-file"> */}
           <Button
             size="icon"
             variant="ghost"
@@ -151,6 +170,7 @@ export const BuilderToolbar = () => {
           >
             {loading ? <CircleNotch className="animate-spin" /> : <FilePdf />}
           </Button>
+          {/* </a> */}
         </Tooltip>
       </div>
     </motion.div>
