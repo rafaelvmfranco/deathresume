@@ -292,7 +292,7 @@ export class FirebaseService {
       ]);
     } catch (error) {
       throw new InternalServerErrorException(
-        `There was an error while deleting the document at the specified path: ${path}., ${error}`,
+        `There was an error ${error} while deleting the document at the specified path: ${path}.}`,
       );
     }
   }
@@ -300,9 +300,11 @@ export class FirebaseService {
   async deleteFile(path: string) {
     const file = this.bucket.file(path);
 
-    const exists = await file.exists();
-    if (exists[0]) {
-      await file.delete();
+    try {
+      const exists = await file.exists();
+      if (exists[0]) await file.delete();
+    } catch (error) {
+      throw new Error(`File at path ${path} is not deleted, error: ${error}.`);
     }
   }
 
@@ -315,7 +317,7 @@ export class FirebaseService {
       await Promise.all(files.map((file: File) => file.delete()));
     } catch (error) {
       throw new InternalServerErrorException(
-        error`There was an error while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
+        `There was an error ${error} while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
       );
     }
   }
