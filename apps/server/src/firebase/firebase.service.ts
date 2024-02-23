@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import admin, { firestore } from "firebase-admin";
-import { getDownloadURL } from 'firebase-admin/storage';
+import { getDownloadURL } from "firebase-admin/storage";
+import { File } from "@google-cloud/storage";
 
 import { createId } from "@paralleldrive/cuid2";
 import { RedisService } from "@songkeys/nestjs-redis";
@@ -270,8 +271,8 @@ export class FirebaseService {
       const fileRef = await this.bucket.file(filepath);
       await fileRef.save(buffer);
       await fileRef.setMetadata(metadata);
-      
-      const downloadURL= await getDownloadURL(fileRef);
+
+      const downloadURL = await getDownloadURL(fileRef);
 
       return downloadURL;
     } catch (error) {
@@ -287,23 +288,34 @@ export class FirebaseService {
     try {
       return await Promise.all([
         this.redis.del(`user:${userId}:storage:${type}:${filename}`),
-        this.bucket.delete({
-          prefix: path,
-        }),
+        this.deleteFile(path),
       ]);
     } catch (error) {
       throw new InternalServerErrorException(
-        `There was an error while deleting the document at the specified path: ${path}.`,
+        `There was an error while deleting the document at the specified path: ${path}., ${error}`,
       );
+    }
+  }
+
+  async deleteFile(path: string) {
+    const file = this.bucket.file(path);
+
+    const exists = await file.exists();
+    if (exists[0]) {
+      await file.delete();
     }
   }
 
   async deleteFolder(prefix: string) {
     try {
-      return await this.bucket.deleteFolder(prefix);
+      const [files] = await this.bucket.getFiles({
+        prefix,
+      });
+
+      await Promise.all(files.map((file: File) => file.delete()));
     } catch (error) {
       throw new InternalServerErrorException(
-        `There was an error while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
+        error`There was an error while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
       );
     }
   }
