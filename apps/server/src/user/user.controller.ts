@@ -70,8 +70,8 @@ export class UserController {
   @Delete("me")
   @UseGuards(TwoFactorGuard)
   async delete(@User("id") id: string, @Res({ passthrough: true }) response: Response) {
-    await this.userService.deleteOneById(id);
-
+    const a = await this.userService.deleteOneById(id);
+Logger.log("delete", a);
     response.clearCookie("Authentication");
     response.clearCookie("Refresh");
 
