@@ -152,6 +152,20 @@ export class FirebaseService {
     );
   }
 
+  async findDocId(collection: CollectionName, { condition }: SearchCondition) {
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ]
+      .where(condition.field, "==", condition.value)
+      .get();
+
+    const id = querySnapshot.docs.map(
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.id,
+    )[0];
+
+    return id;
+  }
+
   async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
     const data = await this.findUnique(collection, condition, select);
     if (!data) {

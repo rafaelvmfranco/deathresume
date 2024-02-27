@@ -11,26 +11,15 @@ export class PlanService {
     return await this.firebaseService.findMany("planCollection");
   }
 
-  async updateById(planId: string, data: PlanDto) {
-    return await this.firebaseService.updateItem(
-      "planCollection",
-      { condition: { field: "id", value: planId } },
-      { dto: data },
-    );
-  }
-
-  async create(data: PlanDto) {
+  async createOne(data: PlanDto) {
     return await this.firebaseService.create("planCollection", { dto: data });
   }
 
-  async getFreePlanId() {
-    const plan = (await this.firebaseService.findUnique("planCollection", {
-      condition: {
-        field: "name",
-        value: "free",
-      },
-    })) as PlanDto;
+  async getFreePlanId(): Promise<string> {
+    const planId = await this.firebaseService.findDocId("planCollection", {
+      condition: { field: "name", value: "free" },
+    });
 
-    return plan.id;
+    return planId;
   }
 }
