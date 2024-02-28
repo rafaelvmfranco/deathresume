@@ -4,12 +4,14 @@ import {
   Post,
   UseGuards,
   Param,
-  Body
+  Body,
+  Put
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 
 import { TwoFactorGuard } from "@/server/auth/guards/two-factor.guard";
 import { PlanService } from "./plan.service";
+import { PlanDto } from "@reactive-resume/dto";
 
 @ApiTags("Plans")
 @Controller("plans")
@@ -23,14 +25,9 @@ export class PlanController {
   }
 
   @Post("")
-  @UseGuards(TwoFactorGuard)
-  async create(@Body() plans: any) {
-    return await this.planService.create(plans);
+   @UseGuards(TwoFactorGuard)
+  async create(@Body() plan: PlanDto) {
+    return await this.planService.createOne(plan);
   }
 
-  @Post("")
-  @UseGuards(TwoFactorGuard)
-  async update(@Param('id') id: string, @Body() planUpdate: any) {
-    return await this.planService.updateById(id, planUpdate);
-  }
 }
