@@ -79,7 +79,9 @@ export class FirebaseService {
   }
 
   async create<T>(collection: CollectionName, { dto }: { dto: T }) {
-    return await this[collection as keyof FirebaseService].add(dto);
+    const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> = await this[collection as keyof FirebaseService].add(dto);
+    const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await docRef.get();
+    return { id: docRef.id, ...docSnapshot.data() };
   }
 
   async findUnique(
@@ -230,7 +232,7 @@ export class FirebaseService {
   }
 
   async deleteByField(collection: CollectionName, { condition }: SearchCondition) {
-    this[collection as keyof FirebaseService]
+    return this[collection as keyof FirebaseService]
       .where(condition.field, "==", condition.value)
       .get()
       .then((querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData>) => {
@@ -240,6 +242,10 @@ export class FirebaseService {
           },
         );
       });
+  }
+
+  async deleteByDocId(collection: CollectionName, docId: string) {
+    return await this[collection as keyof FirebaseService].doc(docId).delete();
   }
 
   async bucketExists() {

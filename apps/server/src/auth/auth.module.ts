@@ -16,6 +16,7 @@ import { JwtStrategy } from "./strategy/jwt.strategy";
 import { LocalStrategy } from "./strategy/local.strategy";
 import { RefreshStrategy } from "./strategy/refresh.strategy";
 import { TwoFactorStrategy } from "./strategy/two-factor.strategy";
+import { FirebaseUserService } from "../user/firebase-user.service";
 
 @Module({})
 export class AuthModule {
@@ -50,14 +51,24 @@ export class AuthModule {
 
         {
           provide: GoogleStrategy,
-          inject: [ConfigService, UserService],
-          useFactory: (configService: ConfigService<Config>, userService: UserService) => {
+          inject: [ConfigService, UserService, FirebaseUserService],
+          useFactory: (
+            configService: ConfigService<Config>,
+            userService: UserService,
+            firebaseUserService: FirebaseUserService,
+          ) => {
             try {
               const clientID = configService.getOrThrow("GOOGLE_CLIENT_ID");
               const clientSecret = configService.getOrThrow("GOOGLE_CLIENT_SECRET");
               const callbackURL = configService.getOrThrow("GOOGLE_CALLBACK_URL");
 
-              return new GoogleStrategy(clientID, clientSecret, callbackURL, userService);
+              return new GoogleStrategy(
+                clientID,
+                clientSecret,
+                callbackURL,
+                userService,
+                firebaseUserService,
+              );
             } catch (error) {
               return new DummyStrategy();
             }
