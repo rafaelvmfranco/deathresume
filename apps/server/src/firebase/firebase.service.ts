@@ -10,13 +10,11 @@ import { Redis } from "ioredis";
 import sharp from "sharp";
 
 import { Config } from "../config/schema";
-import {} from "firebase-admin";
 
 type CollectionName =
   | "userCollection"
   | "planCollection"
   | "resumeCollection"
-  | "secretCollection"
   | "usageCollection"
   | "subcriptionCollection";
 
@@ -55,7 +53,6 @@ export class FirebaseService {
   userCollection: FirebaseFirestore.CollectionReference;
   planCollection: FirebaseFirestore.CollectionReference;
   resumeCollection: FirebaseFirestore.CollectionReference;
-  secretCollection: FirebaseFirestore.CollectionReference;
   usageCollection: FirebaseFirestore.CollectionReference;
 
   bucket: any;
@@ -70,7 +67,6 @@ export class FirebaseService {
     this.userCollection = this.db.collection("users");
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
-    this.secretCollection = this.db.collection("secrets");
     this.usageCollection = this.db.collection("usage");
 
     this.storageBucket = this.configService.getOrThrow<string>("STORAGE_BUCKET");
@@ -78,9 +74,12 @@ export class FirebaseService {
     this.redis = this.redisService.getClient();
   }
 
-  async create<T>(collection: CollectionName, { dto }: { dto: T }) {
-    const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> = await this[collection as keyof FirebaseService].add(dto);
-    const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await docRef.get();
+  async create(collection: CollectionName, id: string, { dto }: { dto: any }) {
+    const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
+      await this[collection as keyof FirebaseService].doc(id);
+    await docRef.set(dto, {merge : true});
+    const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
+      await docRef.get();
     return { id: docRef.id, ...docSnapshot.data() };
   }
 
@@ -188,27 +187,20 @@ export class FirebaseService {
     return data;
   }
 
-  async updateItem<T>(
+  async updateItem(
     collection: CollectionName,
     { condition }: SearchCondition,
     { dto }: { dto: any },
   ) {
-    let updatedItem: T | null = null;
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService
     ]
       .where(condition.field, "==", condition.value)
       .get();
 
-    querySnapshot.forEach(
-      async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
-        const documentRef = this[collection as keyof FirebaseService].doc(doc.id);
-        await doc.ref.update(dto);
-        updatedItem = await documentRef.get().data();
-      },
-    );
-
-    return updatedItem;
+    const doc = querySnapshot.docs[0];
+    await doc.ref.set(dto, { merge: true });
+    return doc.data();
   }
 
   async increaseFieldByNumber(
@@ -226,7 +218,7 @@ export class FirebaseService {
       async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
         const currentUsage = doc.data()[dto.field] || 0;
         const newDto = { ...doc.data(), [dto.field]: currentUsage + dto.value };
-        await doc.ref.update(newDto);
+        await doc.ref.set(newDto, { merge: true });
       },
     );
   }
@@ -257,7 +249,6 @@ export class FirebaseService {
       this.userCollection.get(),
       this.planCollection.get(),
       this.resumeCollection.get(),
-      this.secretCollection.get(),
       this.usageCollection.get(),
     ]);
   }

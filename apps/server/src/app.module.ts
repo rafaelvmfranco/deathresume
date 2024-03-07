@@ -21,7 +21,6 @@ import { UtilsModule } from "./utils/utils.module";
 import { PlanModule } from "./plan/plan.module";
 import { UsageModule } from "./usage/usage.module";
 import { SubcriptionModule } from "./subcription/subcription.module";
-import { SecretModule } from "./secret/secret.module";
 
 @Module({
   imports: [
@@ -45,7 +44,6 @@ import { SecretModule } from "./secret/secret.module";
     PlanModule,
     UsageModule,
     SubcriptionModule,
-    SecretModule,
 
     // Static Assets
     ServeStaticModule.forRoot({
