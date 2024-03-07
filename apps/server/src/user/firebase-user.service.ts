@@ -1,10 +1,10 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { UserDto, SecretsDto } from "@reactive-resume/dto";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { firestore } from "firebase-admin";
+import { UserWithSecrets } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { FirebaseService } from "../firebase/firebase.service";
-import { SecretService } from "../secret/secret.service";
 
 @Injectable()
 export class FirebaseUserService {
@@ -13,26 +13,23 @@ export class FirebaseUserService {
   constructor(
     private readonly redisService: RedisService,
     private readonly firebaseService: FirebaseService,
-    private readonly secretService: SecretService
   ) {
     this.redis = this.redisService.getClient();
   }
 
   async findOneById(id: string) {
-    const secrets = await this.secretService.getSecretByUserId(id);
-
-    if (!secrets) {
-      throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
-    }
-
     const user = (await this.firebaseService.findUniqueOrThrow("userCollection", {
       condition: {
         field: "id",
         value: id,
       },
-    })) as UserDto;
+    })) as UserWithSecrets;
 
-    return { ...user, secrets };
+    if (!user?.secrets) {
+      throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
+    }
+
+    return user;
   }
 
   async findOneByIdentifier(identifier: string) {
@@ -41,68 +38,75 @@ export class FirebaseUserService {
         field: "email",
         value: identifier,
       },
-    })) as UserDto;
+    })) as UserWithSecrets;
 
-    const secrets = await this.secretService.getSecretByUserId(userByEmail.id);
-
-    if (!secrets) {
+    if (!userByEmail?.secrets) {
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
     }
 
-    if (userByEmail) return { ...userByEmail, secrets };
+    if (userByEmail) return userByEmail;
 
-    const userByName = await this.firebaseService.findUniqueOrThrow(
-      "userCollection",
-      {
-        condition: {
-          field: "username",
-          value: identifier,
-        },
+    const userByName = (await this.firebaseService.findUniqueOrThrow("userCollection", {
+      condition: {
+        field: "username",
+        value: identifier,
       },
-    ) as UserDto;
+    })) as UserWithSecrets;
 
-    const secretsByName = await this.secretService.getSecretByUserId(userByName.id);
-
-    if (secretsByName) {                                                                                                            
+    if (userByName?.secrets) {
       throw new InternalServerErrorException(ErrorMessage.SecretsNotFound);
     }
 
-    return {...userByName, secrets: secretsByName};
+    return userByName;
   }
 
-  async create(data: UserDto) {
-    const user = await this.firebaseService.create(
-      "userCollection",
-      { dto: data },
-    );
-    const secrets = await this.secretService.addSecret(user.id, "");
-    return { ...user, secrets };
+  async create(data: any) {
+    const createDto = data?.secrets?.create
+      ? {
+          ...data,
+          secrets: {
+            ...data?.secrets.create,
+            lastSignedIn: null,
+            verificationToken: null,
+            twoFactorSecret: null,
+            twoFactorBackupCodes: [],
+            refreshToken: null,
+            resetToken: null,
+          },
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        }
+      : data;
+
+    const user = await this.firebaseService.create("userCollection", {
+      dto: createDto,
+    });
+
+    return user;
   }
 
-  async updateByEmail(email: string, data: UserDto) {
+  async updateByEmail(email: string, data: any) {
+    const updateDto = data?.secrets ? { secrets: data.secrets.update } : data;
+
     return await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "email", value: email } },
-      { dto: data },
+      { dto: { ...updateDto, updatedAt: firestore.FieldValue.serverTimestamp() } },
     );
   }
 
-  async updateByResetToken(resetToken: string, data: UserDto) {
+  async updateByResetToken(resetToken: string, data: any) {
+    const updateDto = data?.secrets ? { secrets: data.secrets.update } : data;
+
     await this.firebaseService.updateItem(
-      "secretCollection",
+      "userCollection",
       { condition: { field: "resetToken", value: resetToken } },
-      { dto: data },
+      { dto: { ...updateDto, updatedAt: firestore.FieldValue.serverTimestamp() } },
     );
   }
 
   async deleteOneById(id: string) {
-    await Promise.all([
-      this.redis.del(`user:${id}:*`),
-      this.firebaseService.deleteFolder(id),
-    ]);
+    await Promise.all([this.redis.del(`user:${id}:*`), this.firebaseService.deleteFolder(id)]);
 
-    await this.firebaseService.deleteByField("userCollection", {
-      condition: { field: "id", value: id },
-    });
+    return await this.firebaseService.deleteByDocId("userCollection", id);
   }
 }
