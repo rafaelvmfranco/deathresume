@@ -74,9 +74,9 @@ export class FirebaseService {
     this.redis = this.redisService.getClient();
   }
 
-  async create(collection: CollectionName, id: string, { dto }: { dto: any }) {
+  async create(collection: CollectionName, { dto }: { dto: any }) {
     const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
-      await this[collection as keyof FirebaseService].doc(id);
+      await this[collection as keyof FirebaseService].doc();
     await docRef.set(dto, {merge : true});
     const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
       await docRef.get();

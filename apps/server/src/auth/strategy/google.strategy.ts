@@ -61,7 +61,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
           provider: "google",
           emailVerified: true, // auto-verify emails
           username: processUsername(username ?? email.split("@")[0]),
-          secrets: {},
+          secrets: { create: {}},
         });
         done(null, user);
       } catch (error) {
