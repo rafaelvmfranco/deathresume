@@ -22,8 +22,8 @@ export const PlansPage = () => {
         </title>
       </Helmet>
 
-      <div className="fixed top-0 h-screen w-screen py-12 px-24 bg-black text-white">
-        <div>
+      <div className="fixed top-0 h-screen w-screen py-12 px-24 bg-violet text-white dark:bg-black">
+        <div className="">
           <Link to="/dashboard">
             <button className="text-xl text-white">{"\u003C"} &nbsp; Back</button>
           </Link>
@@ -64,11 +64,11 @@ export const PlansPage = () => {
                 key={plan.name + currentPeriod}
                 className={
                   plan.isHighlighted
-                    ? "bg-darkGray border-darkGray border-opacity-0 rounded py-4 px-6"
+                    ? "bg-mediumViolet border-mediumViolet dark:bg-darkGray border-darkGray border-opacity-0 rounded py-4 px-6"
                     : "py-4 px-6"
                 }
               >
-                <div className="h-6 inline bg-black order-darkGray border-opacity-0 px-1 text-xs rounded">
+                <div className="h-6 inline bg-violet dark:bg-black order-darkGray border-opacity-0 px-1 text-xs rounded">
                   {plan.label}
                 </div>
                 <h3 className="text-2xl font-bold leading-relaxed tracking-tight">{t`${plan.name}`}</h3>

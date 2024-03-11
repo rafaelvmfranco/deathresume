@@ -17,6 +17,7 @@ module.exports = {
         violet: "#270061",
         darkGray: "#3C3C3C",
         lightViolet: "#E5E0EC",
+        mediumViolet: "#B8B0C9",
         border: "hsl(var(--border))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
