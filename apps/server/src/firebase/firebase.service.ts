@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common
 import { ConfigService } from "@nestjs/config";
 import admin, { firestore } from "firebase-admin";
 import { getDownloadURL } from "firebase-admin/storage";
-import { File } from "@google-cloud/storage";
 
 import { createId } from "@paralleldrive/cuid2";
 import { RedisService } from "@songkeys/nestjs-redis";
@@ -76,10 +75,10 @@ export class FirebaseService {
 
   async create(collection: CollectionName, { dto }: { dto: any }) {
     const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
-      await this[collection as keyof FirebaseService].doc();
-    await docRef.set(dto, {merge : true});
+    await this[collection as keyof FirebaseService].doc();
+    await docRef.set(dto, { merge : true });
     const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
-      await docRef.get();
+    await docRef.get();
     return { id: docRef.id, ...docSnapshot.data() };
   }
 
@@ -325,7 +324,7 @@ export class FirebaseService {
         prefix,
       });
 
-      await Promise.all(files.map((file: File) => file.delete()));
+      await Promise.all(files.map((file: any) => file.delete()));
     } catch (error) {
       throw new InternalServerErrorException(
         `There was an error ${error} while deleting the folder at the specified path: ${this.storageBucket}/${prefix}.`,
