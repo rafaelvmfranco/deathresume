@@ -24,3 +24,5 @@ export class SubcriptionDto extends createZodDto(subcriptionSchema) {}
 export const subcriptionWithPlanSchema = subcriptionSchema.merge(z.object({ plan: planSchema }));
 
 export class SubcriptionWithPlan extends createZodDto(subcriptionWithPlanSchema) {}
+
+export type Period = z.infer<typeof Period>;
