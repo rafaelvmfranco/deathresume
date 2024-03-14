@@ -83,7 +83,7 @@ describe("IntegrationTesting of userService", () => {
       validateCreateResults(userDto, result, firebaseResult)
 
       await userService.deleteOneById(result.id);
-      await firebaseUserService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseResult.id);
     });
 
     it("create (with google): User is created with secrets", async () => {
@@ -94,7 +94,7 @@ describe("IntegrationTesting of userService", () => {
       validateCreateResults(userDto, result, firebaseResult)
 
       await userService.deleteOneById(result.id);
-      await firebaseUserService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseResult.id);
     });
 
     it("deleteOneById: User is deleted", async () => {
