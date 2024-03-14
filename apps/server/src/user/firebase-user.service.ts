@@ -61,12 +61,15 @@ export class FirebaseUserService {
   }
 
   async create(data: any) {
+    const userId = createId();
+    
     const createDto = data?.secrets?.create
       ? {
           ...data,
           secrets: {
+            id: userId,
             ...data?.secrets.create,
-            lastSignedIn: null,
+            lastSignedIn: firestore.FieldValue.serverTimestamp(),
             verificationToken: null,
             twoFactorSecret: null,
             twoFactorBackupCodes: [],
@@ -77,10 +80,13 @@ export class FirebaseUserService {
         }
       : data;
 
-    const user = await this.firebaseService.create("userCollection", {
-      dto: createDto,
-    });
-
+    const user = await this.firebaseService.create(
+      "userCollection",
+      {
+        dto: createDto,
+      },
+      userId,
+    );
     return user;
   }
 
