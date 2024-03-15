@@ -166,8 +166,31 @@ export class FirebaseService {
     return id;
   }
 
+  async findUniqueResumeByMultipleConditions({ conditions }: MultipleConditions) {
+    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> =
+      await this.resumeCollection
+        .where(conditions.user.field, "==", conditions.user.value)
+        .where(conditions.slug.field, "==", conditions.slug.value)
+        .where(conditions.visibility.field, "==", conditions.visibility.value)
+        .get();
+
+    return querySnapshot.size > 1
+      ? null
+      : querySnapshot.docs.map(
+          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+        )[0];
+  }
+  
   async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
     const data = await this.findUnique(collection, condition, select);
+    if (!data) {
+      throw new Error("Data not found");
+    }
+    return data;
+  }
+
+  async findFirstResumeOrThrow(conditions: MultipleConditions) {
+    const data = await this.findUniqueResumeByMultipleConditions(conditions);
     if (!data) {
       throw new Error("Data not found");
     }

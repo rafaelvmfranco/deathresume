@@ -5,6 +5,7 @@ import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { FirebaseService } from "../firebase/firebase.service";
+import { createId } from "@paralleldrive/cuid2";
 
 @Injectable()
 export class FirebaseUserService {
@@ -69,14 +70,13 @@ export class FirebaseUserService {
           secrets: {
             id: userId,
             ...data?.secrets.create,
-            lastSignedIn: firestore.FieldValue.serverTimestamp(),
             verificationToken: null,
             twoFactorSecret: null,
             twoFactorBackupCodes: [],
             refreshToken: null,
             resetToken: null,
           },
-          createdAt: firestore.FieldValue.serverTimestamp(),
+          createdAt: new Date(),
         }
       : data;
 
@@ -96,7 +96,7 @@ export class FirebaseUserService {
     return await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "email", value: email } },
-      { dto: { ...updateDto, updatedAt: firestore.FieldValue.serverTimestamp() } },
+      { dto: { ...updateDto, updatedAt: new Date() } },
     );
   }
 
@@ -106,7 +106,7 @@ export class FirebaseUserService {
     await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "resetToken", value: resetToken } },
-      { dto: { ...updateDto, updatedAt: firestore.FieldValue.serverTimestamp() } },
+      { dto: { ...updateDto, updatedAt: new Date() } },
     );
   }
 
