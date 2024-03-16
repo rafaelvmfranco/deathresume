@@ -70,6 +70,8 @@ export class FirebaseUserService {
           secrets: {
             id: userId,
             ...data?.secrets.create,
+            id: createId(),
+            userId: userId,
             verificationToken: null,
             twoFactorSecret: null,
             twoFactorBackupCodes: [],
@@ -93,11 +95,14 @@ export class FirebaseUserService {
   async updateByEmail(email: string, data: any) {
     const updateDto = data?.secrets ? { secrets: data.secrets.update } : data;
 
-    return await this.firebaseService.updateItem(
+    const user = await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "email", value: email } },
       { dto: { ...updateDto, updatedAt: new Date() } },
     );
+
+    delete (user as any).secrets;
+    return user;
   }
 
   async updateByResetToken(resetToken: string, data: any) {

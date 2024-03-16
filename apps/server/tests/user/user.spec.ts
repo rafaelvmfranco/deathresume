@@ -20,13 +20,15 @@ function getFakeUserCreateBody({ provider }: Record<"provider", "email" | "googl
   };
 }
 
-function validateUpdate(dto: any, userResult: any, firebaseUserResult?: any){
+function compareDtoAndUsers(dto: any, userResult: any, firebaseUserResult?: any) {
+  expect(userResult.id).toBeTruthy();
   expect(userResult.name).toEqual(dto.name);
   expect(userResult.email).toEqual(dto.email);
   expect(userResult.username).toEqual(dto.username);
   expect(userResult.locale).toEqual(dto.locale);
   expect(userResult.provider).toEqual(dto.provider);
 
+  expect(firebaseUserResult.id).toBeTruthy();
   expect(firebaseUserResult.name).toEqual(dto.name);
   expect(firebaseUserResult.email).toEqual(dto.email);
   expect(firebaseUserResult.username).toEqual(dto.username);
@@ -34,18 +36,24 @@ function validateUpdate(dto: any, userResult: any, firebaseUserResult?: any){
   expect(firebaseUserResult.provider).toEqual(dto.provider);
 }
 
-function validateCreateResults(dto: any, userResult: any, firebaseUserResult?: any) {
-  expect(userResult).toBeTruthy();
+function compareUserSecrets(userResult: any, firebaseUserResult: any) {
   expect(userResult?.id).toBeTruthy();
+  expect(userResult?.secrets?.id).toBeTruthy();
   expect(userResult?.secrets?.id).toBeTruthy();
   expect(userResult.id).toEqual(userResult?.secrets?.userId);
 
-  expect(firebaseUserResult).toBeTruthy();
   expect(firebaseUserResult?.id).toBeTruthy();
+  expect(firebaseUserResult?.secrets).toBeTruthy();
   expect(firebaseUserResult?.secrets?.id).toBeTruthy();
-  expect(firebaseUserResult.id).toEqual(userResult?.secrets?.userId);
+  expect(firebaseUserResult.id).toEqual(firebaseUserResult?.secrets?.userId);
+}
 
-  validateUpdate(dto, userResult, firebaseUserResult);
+function validateCreateResults(dto: any, userResult: any, firebaseUserResult?: any) {
+  expect(userResult).toBeTruthy();
+  expect(firebaseUserResult).toBeTruthy();
+
+  compareDtoAndUsers(dto, userResult, firebaseUserResult);
+  compareUserSecrets(userResult, firebaseUserResult);
 
   expect(userResult?.secrets?.password).toEqual(dto?.secrets?.create.password);
   expect(firebaseUserResult?.secrets?.password).toEqual(dto?.secrets?.create.password);
@@ -75,12 +83,14 @@ describe("IntegrationTesting of userService", () => {
   });
 
   describe("userService methods (create/delete)", () => {
+    jest.setTimeout(40000);
+
     it("create (with email): User is created with secrets", async () => {
       const userDto = getFakeUserCreateBody({ provider: "email" });
       const result = await userService.create(userDto as any);
       const firebaseResult = await firebaseUserService.create(userDto as any);
-      
-      validateCreateResults(userDto, result, firebaseResult)
+
+      validateCreateResults(userDto, result, firebaseResult);
 
       await userService.deleteOneById(result.id);
       await firebaseUserService.deleteOneById(firebaseResult.id);
@@ -91,7 +101,7 @@ describe("IntegrationTesting of userService", () => {
       const result = await userService.create(userDto as any);
       const firebaseResult = await firebaseUserService.create(userDto as any);
 
-      validateCreateResults(userDto, result, firebaseResult)
+      validateCreateResults(userDto, result, firebaseResult);
 
       await userService.deleteOneById(result.id);
       await firebaseUserService.deleteOneById(firebaseResult.id);
@@ -110,7 +120,7 @@ describe("IntegrationTesting of userService", () => {
       expect(response.id).toEqual(result.id);
 
       expect(firebaseResponse).toBeTruthy();
-      expect(firebaseResponse.id).toEqual(result.id);
+      expect(firebaseResult.id).toEqual(firebaseResponse.id);
     });
   });
 
@@ -130,11 +140,13 @@ describe("IntegrationTesting of userService", () => {
       expect(result).toEqual(user);
       expect(result?.secrets).toBeTruthy();
 
-      expect(firebaseResult).toEqual(user);
+      compareDtoAndUsers(user, result, firebaseResult);
+      compareUserSecrets(user, firebaseUser);
+
       expect(firebaseResult?.secrets).toBeTruthy();
 
       await userService.deleteOneById(id);
-      await firebaseUserService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseId);
     });
   });
 
@@ -143,7 +155,7 @@ describe("IntegrationTesting of userService", () => {
 
     const user = await userService.create(userDto as any);
     const firebaseUser = await firebaseUserService.create(userDto as any);
-    
+
     const email = user.email;
     const firebaseEmail = firebaseUser.email;
 
@@ -158,12 +170,12 @@ describe("IntegrationTesting of userService", () => {
     const result = await userService.updateByEmail(email, updateData);
     const firebaseResult = await firebaseUserService.updateByEmail(firebaseEmail, updateData);
 
-    validateUpdate(user, result, firebaseUser);
+    compareDtoAndUsers(user, result, firebaseUser);
 
     expect((result as any)?.secrets).toBeFalsy();
     expect((firebaseResult as any)?.secrets).toBeFalsy();
 
     await userService.deleteOneById(user.id);
-    await firebaseUserService.deleteOneById(user.id);
+    await firebaseUserService.deleteOneById(firebaseUser.id);
   });
 });

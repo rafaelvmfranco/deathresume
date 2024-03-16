@@ -30,6 +30,14 @@ type SearchConditions = {
   conditions: Condition[];
 };
 
+type ConditionsKeys = "user" | "slug" | "visibility";
+
+type MultipleConditions = {
+  conditions: {
+    [K in ConditionsKeys]: Condition;
+  };
+};
+
 type OrderBy = {
   order: {
     field: string;
@@ -87,19 +95,50 @@ export class FirebaseService {
     { condition }: SearchCondition,
     { select }: Select = { select: [] },
   ) {
-    const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
+    return condition.field == "id"
+      ? this.findUniqueById(collection, condition.value, select)
+      : this.findUniqueByField(collection, { condition }, select);
+  }
 
-    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
-      collection as keyof FirebaseService
-    ]
-      .where(condition.field, "==", condition.value)
-      .select(selectionCondition)
-      .get();
+  async findUniqueById(collection: CollectionName, docId: string, select?: string[]) {
+    const docRef = await this[collection as keyof FirebaseService].doc(docId);
 
-    return querySnapshot.size > 1
+    const query = docRef;
+
+    if (select && select?.length > 0) {
+      query.select(...select);
+      Logger.log("select case");
+    }
+
+    const doc = await docRef.get();
+    Logger.log("doc.data()", JSON.stringify(doc.data()));
+    return { id: docId, ...doc.data() };
+  }
+
+  async findUniqueByField(
+    collection: CollectionName,
+    { condition }: SearchCondition,
+    select?: string[],
+  ) {
+    const query: firestore.Query = await this[collection as keyof FirebaseService].where(
+      condition.field,
+      "==",
+      condition.value,
+    );
+
+    if (select && select?.length > 0) {
+      query.select(...select);
+    }
+
+    const querySnapshot = await query.get();
+
+    return querySnapshot.size < 1
       ? null
       : querySnapshot.docs.map(
-          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => ({
+            id: doc.id,
+            ...doc.data(),
+          }),
         )[0];
   }
 
@@ -222,7 +261,7 @@ export class FirebaseService {
 
     const doc = querySnapshot.docs[0];
     await doc.ref.set(dto, { merge: true });
-    return doc.data();
+    return { id: doc.id, ...doc.data() };
   }
 
   async increaseFieldByNumber(
@@ -259,7 +298,10 @@ export class FirebaseService {
   }
 
   async deleteByDocId(collection: CollectionName, docId: string) {
-    return await this[collection as keyof FirebaseService].doc(docId).delete();
+    const docRef = await this[collection as keyof FirebaseService].doc(docId);
+    const doc = (await docRef.get()).data();
+    await docRef.delete();
+    return { id: docId, doc };
   }
 
   async bucketExists() {
