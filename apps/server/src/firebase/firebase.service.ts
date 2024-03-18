@@ -83,8 +83,8 @@ export class FirebaseService {
 
   async create(collection: CollectionName, { dto }: { dto: any }, docId?: string) {
     const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
-    await this[collection as keyof FirebaseService].doc(docId);
-    await docRef.set(dto, { merge : true });
+    await this[collection as keyof FirebaseService].doc(docId || createId());
+    await docRef.set(dto, { merge: true });
     const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
     await docRef.get();
     return { id: docRef.id, ...docSnapshot.data() };
