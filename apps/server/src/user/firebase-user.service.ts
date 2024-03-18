@@ -89,6 +89,7 @@ export class FirebaseUserService {
       },
       userId,
     );
+    await this.usageService.create(userId);
     return user;
   }
 
