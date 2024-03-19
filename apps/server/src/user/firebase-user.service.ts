@@ -14,6 +14,7 @@ export class FirebaseUserService {
   constructor(
     private readonly redisService: RedisService,
     private readonly firebaseService: FirebaseService,
+    private readonly usageService: UsageService,
   ) {
     this.redis = this.redisService.getClient();
   }
@@ -117,7 +118,11 @@ export class FirebaseUserService {
   }
 
   async deleteOneById(id: string) {
-    await Promise.all([this.redis.del(`user:${id}:*`), this.firebaseService.deleteFolder(id)]);
+    await Promise.all([
+      this.redis.del(`user:${id}:*`),
+      this.firebaseService.deleteFolder(id),
+      this.usageService.delete(id),
+    ]);
 
     return await this.firebaseService.deleteByDocId("userCollection", id);
   }
