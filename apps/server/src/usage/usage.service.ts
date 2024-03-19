@@ -19,8 +19,17 @@ export class UsageService {
     });
   }
 
-  async increaseFieldNumberBy1(userId: string, updateField: UpdateFields) {
-    return await this.firebaseService.increaseFieldByNumber(
+  async findOneByUserId(userId: string) {
+    return await this.firebaseService.findUnique("usageCollection", {
+      condition: {
+        field: "userId",
+        value: userId,
+      },
+    });
+  }
+
+  async changeFieldByNumberBy1(userId: string, updateDto: UpdateUsageDto) {
+    return await this.firebaseService.changeFieldByNumber(
       "usageCollection",
       {
         condition: {
@@ -30,10 +39,20 @@ export class UsageService {
       },
       {
         dto: {
-          field: updateField,
+          field: updateDto.field,
           value: 1,
         },
       },
+      updateDto.action
     );
+  }
+
+  async deleteByUserId(userId: string) {
+    return await this.firebaseService.deleteByField("usageCollection", {
+      condition: {
+        field: "userId",
+        value: userId,
+      },
+    });
   }
 }
