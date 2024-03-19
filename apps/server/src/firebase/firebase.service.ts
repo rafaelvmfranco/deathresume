@@ -9,6 +9,7 @@ import { Redis } from "ioredis";
 import sharp from "sharp";
 
 import { Config } from "../config/schema";
+import { ChangeFieldAction } from "@reactive-resume/dto";
 
 type CollectionName =
   | "userCollection"
@@ -61,6 +62,7 @@ export class FirebaseService {
   planCollection: FirebaseFirestore.CollectionReference;
   resumeCollection: FirebaseFirestore.CollectionReference;
   usageCollection: FirebaseFirestore.CollectionReference;
+  subcriptionCollection: FirebaseFirestore.CollectionReference;
 
   bucket: any;
   storageBucket: string;
@@ -75,6 +77,7 @@ export class FirebaseService {
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
     this.usageCollection = this.db.collection("usage");
+    this.subcriptionCollection = this.db.collection("subcriptions");
 
     this.storageBucket = this.configService.getOrThrow<string>("STORAGE_BUCKET");
     this.bucket = admin.storage().bucket(this.storageBucket);
@@ -264,10 +267,11 @@ export class FirebaseService {
     return { id: doc.id, ...doc.data() };
   }
 
-  async increaseFieldByNumber(
+  async changeFieldByNumber(
     collection: CollectionName,
     { condition }: SearchCondition,
     { dto }: { dto: Condition },
+    action: ChangeFieldAction,
   ) {
     const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService
@@ -278,7 +282,11 @@ export class FirebaseService {
     querySnapshot.forEach(
       async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
         const currentUsage = doc.data()[dto.field] || 0;
-        const newDto = { ...doc.data(), [dto.field]: currentUsage + dto.value };
+
+        const newDto =
+          action === "increment"
+            ? { ...doc.data(), [dto.field]: currentUsage + dto.value }
+            : { ...doc.data(), [dto.field]: currentUsage - dto.value };
         await doc.ref.set(newDto, { merge: true });
       },
     );

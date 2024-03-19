@@ -5,6 +5,8 @@ import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { FirebaseService } from "../firebase/firebase.service";
+import { UsageService } from "../usage/usage.service";
+import { SubcriptionService } from "../subcription/subcription.service";
 import { createId } from "@paralleldrive/cuid2";
 
 @Injectable()
@@ -15,6 +17,7 @@ export class FirebaseUserService {
     private readonly redisService: RedisService,
     private readonly firebaseService: FirebaseService,
     private readonly usageService: UsageService,
+    private readonly subcriptionService: SubcriptionService,
   ) {
     this.redis = this.redisService.getClient();
   }
@@ -90,7 +93,10 @@ export class FirebaseUserService {
       },
       userId,
     );
-    await this.usageService.create(userId);
+    await Promise.all([
+      this.usageService.create(userId),
+      this.subcriptionService.setDefaultSubcription(userId),
+    ]);
     return user;
   }
 
@@ -121,7 +127,8 @@ export class FirebaseUserService {
     await Promise.all([
       this.redis.del(`user:${id}:*`),
       this.firebaseService.deleteFolder(id),
-      this.usageService.delete(id),
+      this.usageService.deleteByUserId(id),
+      this.subcriptionService.stopSubcription(id),
     ]);
 
     return await this.firebaseService.deleteByDocId("userCollection", id);

@@ -45,6 +45,15 @@ export class SubcriptionService {
         payments: [],
         isPaidPlanActive: false,
       },
+
+    });
+  }
+
+  async stopSubcription(userId: string) {
+    // stop payment
+
+    return await this.firebaseService.deleteByField("subcriptionCollection", {
+      condition: { field: "userId", value: userId },
     });
   }
 
