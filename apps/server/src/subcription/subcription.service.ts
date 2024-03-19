@@ -41,11 +41,13 @@ export class SubcriptionService {
       dto: {
         planId: freePlanId,
         userId,
-        period: "year",
+        period: { name: "year", monthlyPayments: 12 },
         payments: [],
-        isPaidPlanActive: false,
+        startPaymentAt: null,
+        lastPaymentAt: null,
+        activeUntil: Infinity,
+        createdAt: Date.now(),
       },
-
     });
   }
 

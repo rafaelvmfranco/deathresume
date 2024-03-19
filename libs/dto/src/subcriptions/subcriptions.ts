@@ -4,7 +4,10 @@ import { z } from "nestjs-zod/z";
 
 import { planSchema } from "../plans";
 
-const Period = z.enum(["month", "year"]);
+const Period = z.object({
+  name: z.enum(["month", "year"]),
+  monthlyPayments: z.number().refine((value) => value === 1 || value === 12),
+});
 
 const paymentContent = z.object({
   fakeData: z.string(),
@@ -16,7 +19,10 @@ export const subcriptionSchema = z.object({
   planId: idSchema,
   period: Period,
   payments: z.array(paymentContent),
-  isPaidPlanActive: z.boolean().default(false)
+  startPaymentAt: z.union([z.null(), z.number()]),
+  lastPaymentAt: z.union([z.null(), z.number()]),
+  activeUntil: z.number().refine((value) => value === Infinity || Number.isFinite(value)),
+  createdAt: z.number(),
 });
 
 export class SubcriptionDto extends createZodDto(subcriptionSchema) {}
