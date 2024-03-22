@@ -19,7 +19,7 @@ import { FirebaseService } from "../firebase/firebase.service";
 import { UtilsService } from "../utils/utils.service";
 
 @Injectable()
-export class ResumeService {
+export class FirebaseResumeService {
   private readonly redis: Redis;
 
   constructor(
