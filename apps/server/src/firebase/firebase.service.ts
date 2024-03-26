@@ -279,6 +279,8 @@ export class FirebaseService {
       .where(condition.field, "==", condition.value)
       .get();
 
+    let docId = "";
+
     querySnapshot.forEach(
       async (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
         const currentUsage = doc.data()[dto.field] || 0;
@@ -287,9 +289,12 @@ export class FirebaseService {
           action === "increment"
             ? { ...doc.data(), [dto.field]: currentUsage + dto.value }
             : { ...doc.data(), [dto.field]: currentUsage - dto.value };
+        docId = doc.id;
         await doc.ref.set(newDto, { merge: true });
       },
     );
+
+    return await this.findUniqueById(collection, docId);
   }
 
   async deleteByField(collection: CollectionName, { condition }: SearchCondition) {
