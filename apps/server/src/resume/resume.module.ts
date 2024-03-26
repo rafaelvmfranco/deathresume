@@ -7,9 +7,10 @@ import { FirebaseModule } from "../firebase/firebase.module";
 import { ResumeController } from "./resume.controller";
 import { ResumeService } from "./resume.service";
 import { FirebaseResumeService } from "./firebase-resume.service";
+import { UsageModule } from "../usage/usage.module";
 
 @Module({
-  imports: [AuthModule, PrinterModule, FirebaseModule],
+  imports: [AuthModule, PrinterModule, FirebaseModule, UsageModule],
   controllers: [ResumeController],
   providers: [ResumeService, FirebaseResumeService],
   exports: [ResumeService],

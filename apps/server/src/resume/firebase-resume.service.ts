@@ -17,6 +17,7 @@ import { PrinterService } from "@/server/printer/printer.service";
 
 import { FirebaseService } from "../firebase/firebase.service";
 import { UtilsService } from "../utils/utils.service";
+import { UsageService } from "../usage/usage.service";
 
 @Injectable()
 export class FirebaseResumeService {
@@ -27,6 +28,7 @@ export class FirebaseResumeService {
     private readonly firebaseService: FirebaseService,
     private readonly redisService: RedisService,
     private readonly utils: UtilsService,
+    private readonly usageService: UsageService,
   ) {
     this.redis = this.redisService.getClient();
   }
@@ -56,6 +58,14 @@ export class FirebaseResumeService {
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
       this.redis.set(`user:${userId}:resume:${resume.id}`, JSON.stringify(resume)),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "views",
+      }),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "resumes",
+      }),
     ]);
 
     return resume;
@@ -77,34 +87,40 @@ export class FirebaseResumeService {
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
       this.redis.set(`user:${userId}:resume:${resume.id}`, JSON.stringify(resume)),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "resumes",
+      }),
     ]);
 
     return resume;
   }
 
   findAll(userId: string) {
-    return this.utils.getCachedOrSet(
-      `user:${userId}:resumes`,
-      () =>
-        this.firebaseService.findManyAndOrder(
-          "resumeCollection",
-          { condition: { field: "userId", value: userId } },
-          { order: { field: "updatedAt", by: "desc" } },
-        ),
+    return this.utils.getCachedOrSet(`user:${userId}:resumes`, async () =>
+      await this.firebaseService.findManyAndOrder(
+        "resumeCollection",
+        { condition: { field: "userId", value: userId } },
+        { order: { field: "updatedAt", by: "desc" } },
+      ),
     );
   }
 
-  findOne(id: string, userId?: string) {
+  async findOne(id: string, userId: string = "") {
     if (userId) {
-      return this.utils.getCachedOrSet(`user:${userId}:resume:${id}`, () =>
-        // this.prisma.resume.findUniqueOrThrow({
-        //   where: { userId_id: { userId, id } },
-        // }),
-        this.firebaseService.findUniqueOrThrow("resumeCollection", {
-          condition: { field: "id", value: id },
-        }),
+      return this.utils.getCachedOrSet(
+        `user:${userId}:resume:${id}`,
+        async () =>
+          await this.firebaseService.findUniqueOrThrow("resumeCollection", {
+            condition: { field: "userId", value: id },
+          }),
       );
     }
+
+    await this.usageService.changeFieldByNumberBy1(userId, {
+      action: "increment",
+      field: "views",
+    });
 
     return this.utils.getCachedOrSet(
       `user:public:resume:${id}`,
@@ -126,83 +142,80 @@ export class FirebaseResumeService {
     return { views, downloads };
   }
 
-  async findOneByUsernameSlug(username: string, slug: string, userId?: string) {
+  async findOneUsage(userId: string) {
+    return await this.usageService.findOneByUserId(userId);
+  }
 
-    const resume = await this.firebaseService.findFirstOrThrow("resumeCollection", {
-      conditions: [
-        {
+  async findOneByUsernameSlug(username: string, slug: string, userId: string = "") {
+    const resume = await this.firebaseService.findFirstResumeOrThrow({
+      conditions: {
+        user: {
           field: "user",
           value: { username },
         },
-        {
+        slug: {
           field: "slug",
           value: slug,
         },
-        {
+        visibility: {
           field: "visibility",
           value: "public",
         },
-      ],
+      },
     });
 
     // Update statistics: increment the number of views by 1
-    if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:views`);
+    await this.usageService.changeFieldByNumberBy1(userId, {
+      action: "increment",
+      field: "views",
+    });
+
+    //if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:views`);
 
     return resume;
   }
 
   async update(userId: string, id: string, updateResumeDto: UpdateResumeDto) {
-    try {
-
-      const { locked } = await this.firebaseService.findUniqueOrThrow(
-        "resumeCollection",
-        {
-          condition: {
-            field: "id",
-            value: id,
-          },
+    const { locked } = await this.firebaseService.findUniqueOrThrow(
+      "resumeCollection",
+      {
+        condition: {
+          field: "id",
+          value: id,
         },
-        { select: ["locked"] },
-      );
+      },
+      { select: ["locked"] },
+    );
 
-      if (locked) throw new BadRequestException(ErrorMessage.ResumeLocked);
+    if (locked) throw new BadRequestException(ErrorMessage.ResumeLocked);
 
-      const resume = await this.firebaseService.updateItem(
-        "resumeCollection",
-        {
-          condition: {
-            field: "id",
-            value: id,
-          },
+    const resume = await this.firebaseService.updateItem(
+      "resumeCollection",
+      {
+        condition: {
+          field: "id",
+          value: id,
         },
-        {
-          dto: {
-            title: updateResumeDto.title,
-            slug: updateResumeDto.slug,
-            visibility: updateResumeDto.visibility,
-            data: updateResumeDto.data,
-          },
+      },
+      {
+        dto: {
+          title: updateResumeDto.title,
+          slug: updateResumeDto.slug,
+          visibility: updateResumeDto.visibility,
+          data: updateResumeDto.data,
         },
-      );
+      },
+    );
 
-      await Promise.all([
-        this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
-        this.redis.del(`user:${userId}:resumes`),
-        this.redis.del(`user:${userId}:storage:resumes:${id}`),
-        this.redis.del(`user:${userId}:storage:previews:${id}`),
-      ]);
+    await Promise.all([
+      this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
+      this.redis.del(`user:${userId}:resumes`),
+    ]);
 
-      return resume;
-    } catch (error) {
-      if (error.code === "P2025") {
-        Logger.error(error);
-        throw new InternalServerErrorException(error);
-      }
-    }
+    return resume;
   }
 
   async lock(userId: string, id: string, set: boolean) {
-
     const resume = await this.firebaseService.updateItem(
       "resumeCollection",
       {
@@ -235,31 +248,30 @@ export class FirebaseResumeService {
       // Remove files in bucket, and their cached keys
       this.firebaseService.deleteObject(userId, "resumes", id),
       this.firebaseService.deleteObject(userId, "previews", id),
+
+      this.usageService.deleteByUserId(userId),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "decrement",
+        field: "resumes",
+      }),
     ]);
 
-    //return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });
-    return this.firebaseService.deleteByField("resumeCollection", {
-      condition: {
-        field: "userId_id",
-        value: { userId, id },
-      },
-    });
+    return this.firebaseService.deleteByDocId("resumeCollection", id);
   }
 
-  async printResume(resume: ResumeDto, userId?: string) {
+  async printResume(resume: ResumeDto, userId: string = "") {
     const url = await this.printerService.printResume(resume);
 
     // Update statistics: increment the number of downloads by 1
-    if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:downloads`);
-    Logger.log("printResume, url:", url)
+    this.usageService.changeFieldByNumberBy1(userId, {
+      action: "increment",
+      field: "downloads",
+    });
+
     return url;
   }
 
   async printPreview(resume: ResumeDto) {
-    
-    const a = await this.printerService.printPreview(resume);
-    Logger.log("printPreview, a:", a);
-    return a;
-
+    return await this.printerService.printPreview(resume);
   }
 }
