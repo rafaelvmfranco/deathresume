@@ -78,7 +78,7 @@ export class AuthService {
       secrets: {
         update: {
           refreshToken: token,
-          lastSignedIn: token ? new Date() : null,
+          lastSignedIn: new Date(),
         },
       },
     });
@@ -108,9 +108,6 @@ export class AuthService {
         emailVerified: false, // Set to true if you don't want to verify user's email
         secrets: { create: { password: hashedPassword } },
       });
-
-
-      
 
       // await this.firebaseUserService.create({
       //   name: registerDto.name,
@@ -316,6 +313,7 @@ export class AuthService {
       twoFactorEnabled: false,
       secrets: { update: { twoFactorSecret: null, twoFactorBackupCodes: [] } },
     });
+
   }
 
   async verify2FACode(email: string, code: string) {
@@ -353,7 +351,7 @@ export class AuthService {
     }
 
     // Remove the used backup code from the database
-    const backupCodes = user.secrets?.twoFactorBackupCodes.filter((c) => c !== code);
+    const backupCodes = user.secrets?.twoFactorBackupCodes.filter((c: string) => c !== code);
     await this.userService.updateByEmail(email, {
       secrets: { update: { twoFactorBackupCodes: backupCodes } },
     });
