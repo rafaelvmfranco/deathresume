@@ -4,7 +4,7 @@ import { AppModule } from "../../src/app.module";
 import { UserService } from "../../src/user/user.service";
 import { FirebaseUserService } from "../../src/user/firebase-user.service";
 
-function getFakeUserCreateBody({ provider }: Record<"provider", "email" | "google">) {
+export function getFakeUserCreateBody({ provider }: Record<"provider", "email" | "google">) {
   return {
     name: faker.internet.userName() + faker.internet.userName(),
     email: `${faker.internet.userName()}@mail.com`,
@@ -154,7 +154,7 @@ describe("IntegrationTesting of userService", () => {
     const userDto = getFakeUserCreateBody({ provider: "google" });
 
     const user = await userService.create(userDto as any);
-    const firebaseUser = await firebaseUserService.create(userDto as any);
+    const firebaseUser: any = await firebaseUserService.create(userDto as any);
 
     const email = user.email;
     const firebaseEmail = firebaseUser.email;
