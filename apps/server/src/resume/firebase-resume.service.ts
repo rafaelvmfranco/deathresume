@@ -60,10 +60,6 @@ export class FirebaseResumeService {
       this.redis.set(`user:${userId}:resume:${resume.id}`, JSON.stringify(resume)),
       this.usageService.changeFieldByNumberBy1(userId, {
         action: "increment",
-        field: "views",
-      }),
-      this.usageService.changeFieldByNumberBy1(userId, {
-        action: "increment",
         field: "resumes",
       }),
     ]);
