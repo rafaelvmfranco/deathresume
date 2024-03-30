@@ -1,24 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { faker } from "@faker-js/faker";
 import { AppModule } from "../../src/app.module";
 import { UserService } from "../../src/user/user.service";
 import { FirebaseUserService } from "../../src/user/firebase-user.service";
-
-export function getFakeUserCreateBody({ provider }: Record<"provider", "email" | "google">) {
-  return {
-    name: faker.internet.userName() + faker.internet.userName(),
-    email: `${faker.internet.userName()}@mail.com`,
-    username: faker.internet.userName(),
-    locale: "en-US",
-    provider,
-    emailVerified: false,
-    secrets: {
-      create: {
-        password: "$2a$10$nbV.gEhTNGPUyQX.9tQI4eBFQDgr0Mx/MlkNcTgqpTrjjsdNXEHOC",
-      },
-    },
-  };
-}
+import { getFakeUserCreateBody } from "../constants";
 
 function compareDtoAndUsers(dto: any, userResult: any, firebaseUserResult?: any) {
   expect(userResult.id).toBeTruthy();
@@ -178,4 +162,5 @@ describe("IntegrationTesting of userService", () => {
     await userService.deleteOneById(user.id);
     await firebaseUserService.deleteOneById(firebaseUser.id);
   });
+  
 });

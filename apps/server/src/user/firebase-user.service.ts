@@ -23,11 +23,8 @@ export class FirebaseUserService {
   }
 
   async findOneById(id: string) {
-    const user = (await this.firebaseService.findUniqueOrThrow("userCollection", {
-      condition: {
-        field: "id",
-        value: id,
-      },
+    const user = (await this.firebaseService.findUniqueByIdOrThrow("userCollection", {
+      id, 
     })) as UserWithSecrets;
 
     if (!user?.secrets) {

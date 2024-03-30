@@ -5,12 +5,13 @@ import { ResumeService } from "../../src/resume/resume.service";
 import { FirebaseResumeService } from "../../src/resume/firebase-resume.service";
 import { UserService } from "../../src/user/user.service";
 import { FirebaseUserService } from "../../src/user/firebase-user.service";
-import { getFakeUserCreateBody } from "../user/user.spec";
+import { getFakeUserCreateBody } from "../constants"
+import { CreateResumeDto } from "../../../../libs/dto/src/resume";
 
-function getResumeCreateDto(visibility: Record<"visibility", "private" | "public">) {
+function getResumeCreateDto({ visibility }: { visibility: "private" | "public" }): CreateResumeDto {
   return {
-    title: faker.string.sample(),
-    slug: faker.string.sample(),
+    title: "new title",
+    slug: "slug/slug",
     visibility,
   };
 }
@@ -70,7 +71,9 @@ describe("IntegrationTesting of resumeService", () => {
   it("Resume services should be defined", () => {
     expect(resumeService).toBeDefined();
     expect(firebaseResumeService).toBeDefined();
-  });
+    expect(userService).toBeDefined();
+    expect(firebaseUserService).toBeDefined();
+  })
 
   describe("resumeService methods: (create)", () => {
     jest.setTimeout(40000);
@@ -78,182 +81,197 @@ describe("IntegrationTesting of resumeService", () => {
     it("Resume is created", async () => {
       const createDto = getResumeCreateDto({ visibility: "public" });
 
-      const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-      const firebaseCreatedUser = await firebaseUserService.create(
+      const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+      const firebaseUser = await firebaseUserService.create(
         getFakeUserCreateBody({ provider: "email" }),
       );
 
-      const createdResume = await resumeService.create(createdUser.id, createDto);
-      const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+      const resume = await resumeService.create(user.id, createDto);
+      const firebaseResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-      compareCreatedResumes(createdResume, firebaseCreatedResume);
+      compareCreatedResumes(resume, firebaseResume);
 
-      await resumeService.remove(createdUser.id, createdResume.id);
-      await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
+      await resumeService.remove(user.id, resume.id);
+      await firebaseResumeService.remove(firebaseUser.id, firebaseResume.id);
 
-      await userService.deleteOneById(createdUser.id);
-      await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+      await userService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseUser.id);
     });
   });
 
   describe("resumeService methods: delete", () => {
+    jest.setTimeout(40000);
+
     it("delete: for created user 1 resume created, deleted and not found, results are compared", async () => {
       const createDto = getResumeCreateDto({ visibility: "public" });
 
-      const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-      const firebaseCreatedUser = await firebaseUserService.create(
+      const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+      const firebaseUser = await firebaseUserService.create(
         getFakeUserCreateBody({ provider: "email" }),
       );
 
-      const createdResume = await resumeService.create(createdUser.id, createDto);
-      const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+      const createdResume = await resumeService.create(user.id, createDto);
+      const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-      await resumeService.remove(createdUser.id, createdResume.id);
+      await resumeService.remove(user.id, createdResume.id);
       await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
 
-      const foundResume = await resumeService.findOne(createdResume.id, createdUser.id);
+      const foundResume = await resumeService.findOne(createdResume.id, user.id);
       const firebaseFoundResume = await firebaseResumeService.findOne(
         firebaseCreatedResume.id,
-        firebaseCreatedUser.id,
+        firebaseUser.id,
       );
 
       expect(foundResume).toThrow();
       expect(firebaseFoundResume).toThrow();
 
-      await userService.deleteOneById(createdUser.id);
-      await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+      await userService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseUser.id);
     });
   });
 
   describe("resumeService methods (find all/find one/findOneByUsernameSlug)", () => {
+    jest.setTimeout(40000);
+
     it("findAll: for created user 1 resume created and found, results are compared", async () => {
       const createDto = getResumeCreateDto({ visibility: "public" });
 
-      const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-      const firebaseCreatedUser = await firebaseUserService.create(
+      const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+      const firebaseUser = await firebaseUserService.create(
         getFakeUserCreateBody({ provider: "email" }),
       );
 
-      const createdResume = await resumeService.create(createdUser.id, createDto);
-      const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+      const createdResume = await resumeService.create(user.id, createDto);
+      const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-      const foundResumes = await resumeService.findAll(createdUser.id);
-      const firebaseFoundResumes = await firebaseResumeService.findAll(createdUser.id);
+      const foundResumes = await resumeService.findAll(user.id);
+      const firebaseFoundResumes = await firebaseResumeService.findAll(firebaseUser.id);
 
       compareResumesList(foundResumes, firebaseFoundResumes);
 
-      await resumeService.remove(createdUser.id, createdResume.id);
-      await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
+      await resumeService.remove(user.id, createdResume.id);
+      await firebaseResumeService.remove(firebaseUser.id, firebaseCreatedResume.id);
 
-      await userService.deleteOneById(createdUser.id);
-      await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+      await userService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseUser.id);
     });
   });
 
   it("findOne: for created user 1 resume created and found, results are compared", async () => {
+    jest.setTimeout(40000);
+
     const createDto = getResumeCreateDto({ visibility: "public" });
 
-    const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-    const firebaseCreatedUser = await firebaseUserService.create(
+    const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+    const firebaseUser = await firebaseUserService.create(
       getFakeUserCreateBody({ provider: "email" }),
     );
 
-    const createdResume = await resumeService.create(createdUser.id, createDto);
-    const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+    const createdResume = await resumeService.create(user.id, createDto);
+    const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-    const foundResume = await resumeService.findOne(createdResume.id, createdUser.id);
+    const foundResume = await resumeService.findOne(createdResume.id, user.id);
     const firebaseFoundResume = await firebaseResumeService.findOne(
-      firebaseCreatedUser.id,
       firebaseCreatedResume.id,
+      firebaseUser.id,
     );
 
     expect(extractVariableFields(foundResume)).toEqual(firebaseFoundResume);
 
-    await resumeService.remove(createdUser.id, createdResume.id);
+    await resumeService.remove(user.id, createdResume.id);
     await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
 
-    await userService.deleteOneById(createdUser.id);
-    await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+    await userService.deleteOneById(user.id);
+    await firebaseUserService.deleteOneById(firebaseUser.id);
   });
 
   it("findOneByUsernameSlug: for created user 1 resume created and found, results are compared", async () => {
+    jest.setTimeout(40000);
+
     const createDto = getResumeCreateDto({ visibility: "public" });
 
-    const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-    const firebaseCreatedUser = await firebaseUserService.create(
+    const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+    const firebaseUser = await firebaseUserService.create(
       getFakeUserCreateBody({ provider: "email" }),
     );
 
-    const createdResume = await resumeService.create(createdUser.id, createDto);
-    const firebaseCreatedResume = await firebaseResumeService.create(
-      firebaseCreatedUser.id,
-      createDto,
-    );
+    const createdResume = await resumeService.create(user.id, createDto);
+    const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
     const foundResume = await resumeService.findOneByUsernameSlug(
-      createdUser.name,
+      user.name,
       createdResume.slug,
-      createdUser.id,
+      user.id,
     );
     const firebaseFoundResume = await firebaseResumeService.findOneByUsernameSlug(
-      (firebaseCreatedUser as any).name,
+      (firebaseUser as any).name,
       (firebaseCreatedResume as any).slug,
-      firebaseCreatedUser.id,
+      firebaseUser.id,
     );
 
     expect(extractVariableFields(foundResume)).toEqual(firebaseFoundResume);
 
-    await resumeService.remove(createdUser.id, createdResume.id);
+    await resumeService.remove(user.id, createdResume.id);
     await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
 
-    await userService.deleteOneById(createdUser.id);
-    await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+    await userService.deleteOneById(user.id);
+    await firebaseUserService.deleteOneById(firebaseUser.id);
   });
 
   describe("resumeService methods (update/lock)", () => {
     it("update: for created user 1 resume created and updated, results are compared", async () => {
       const createDto = getResumeCreateDto({ visibility: "public" });
 
-      const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-      const firebaseCreatedUser = await firebaseUserService.create(
+      const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+      const firebaseUser = await firebaseUserService.create(
         getFakeUserCreateBody({ provider: "email" }),
       );
 
-      const createdResume = await resumeService.create(createdUser.id, createDto);
-      const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+      const createdResume = await resumeService.create(user.id, createDto);
+      const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-      const updateDto = {
-        headline: "New Headline",
+      const updateDto: any = {
+        ...createdResume,
       };
+      updateDto.data.basics.headline = "New Headline";
 
-      const foundResumes = await resumeService.update(createdUser.id, createdResume.id, updateDto);
-      const firebaseFoundResumes = await firebaseResumeService.update(firebaseCreatedUser.id, firebaseCreatedResume.id, updateDto);
+      const firebaseUpdateDto: any = {
+        ...firebaseCreatedResume,
+      };
+      firebaseUpdateDto.data.basics.headline = "New Headline";
 
-      expect((foundResumes as any).headline).toEqual(updateDto.headline);
-      expect((firebaseFoundResumes as any).headline).toEqual(updateDto.headline);
+      const foundResumes = await resumeService.update(user.id, createdResume.id, updateDto);
+      const firebaseFoundResumes = await firebaseResumeService.update(
+        firebaseUser.id,
+        firebaseCreatedResume.id,
+        updateDto,
+      );
 
-      await resumeService.remove(createdUser.id, createdResume.id);
+      expect((foundResumes as any).headline).toEqual(updateDto.data.basics.headline);
+      expect((firebaseFoundResumes as any).headline).toEqual(firebaseUpdateDto.data.basics.headline);
+
+      await resumeService.remove(user.id, createdResume.id);
       await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
 
-      await userService.deleteOneById(createdUser.id);
-      await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+      await userService.deleteOneById(user.id);
+      await firebaseUserService.deleteOneById(firebaseUser.id);
     });
   });
 
   it("lock: for created user 1 resume created and lock field is set as false, results are compared", async () => {
     const createDto = getResumeCreateDto({ visibility: "public" });
 
-    const createdUser = await userService.create(getFakeUserCreateBody({ provider: "email" }));
-    const firebaseCreatedUser = await firebaseUserService.create(
+    const user = await userService.create(getFakeUserCreateBody({ provider: "email" }));
+    const firebaseUser = await firebaseUserService.create(
       getFakeUserCreateBody({ provider: "email" }),
     );
 
-    const createdResume = await resumeService.create(createdUser.id, createDto);
-    const firebaseCreatedResume = await firebaseResumeService.create(createdUser.id, createDto);
+    const createdResume = await resumeService.create(user.id, createDto);
+    const firebaseCreatedResume = await firebaseResumeService.create(firebaseUser.id, createDto);
 
-    const foundResume = await resumeService.lock(createdUser.id, createdResume.id, false);
+    const foundResume = await resumeService.lock(user.id, createdResume.id, false);
     const firebaseFoundResume = await firebaseResumeService.lock(
-      firebaseCreatedUser.id,
+      firebaseUser.id,
       firebaseCreatedResume.id,
       false,
     );
@@ -261,10 +279,10 @@ describe("IntegrationTesting of resumeService", () => {
     expect((foundResume as any).lock).toEqual(false);
     expect((firebaseFoundResume as any).lock).toEqual(false);
 
-    await resumeService.remove(createdUser.id, createdResume.id);
+    await resumeService.remove(user.id, createdResume.id);
     await firebaseResumeService.remove(firebaseCreatedResume.id, firebaseCreatedResume.id);
 
-    await userService.deleteOneById(createdUser.id);
-    await firebaseUserService.deleteOneById(firebaseCreatedUser.id);
+    await userService.deleteOneById(user.id);
+    await firebaseUserService.deleteOneById(firebaseUser.id);
   });
 });

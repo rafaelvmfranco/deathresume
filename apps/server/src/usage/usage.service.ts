@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 
 import { FirebaseService } from "../firebase/firebase.service";
-import { UpdateFields } from "@reactive-resume/dto";
+import { ChangeFieldAction, UpdateFields, UpdateUsageDto, UsageDto } from "@reactive-resume/dto";
 
 @Injectable()
 export class UsageService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  async create(userId: string) {
+  async create(userId: string): Promise<any> {
     return await this.firebaseService.create("usageCollection", {
       dto: {
         userId,
@@ -19,7 +19,7 @@ export class UsageService {
     });
   }
 
-  async findOneByUserId(userId: string) {
+  async findOneByUserId(userId: string): Promise<any> {
     return await this.firebaseService.findUnique("usageCollection", {
       condition: {
         field: "userId",
@@ -28,7 +28,7 @@ export class UsageService {
     });
   }
 
-  async changeFieldByNumberBy1(userId: string, updateDto: UpdateUsageDto) {
+  async changeFieldByNumberBy1(userId: string, updateDto: any) {
     return await this.firebaseService.changeFieldByNumber(
       "usageCollection",
       {

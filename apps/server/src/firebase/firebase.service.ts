@@ -31,14 +31,6 @@ type SearchConditions = {
   conditions: Condition[];
 };
 
-type ConditionsKeys = "user" | "slug" | "visibility";
-
-type MultipleConditions = {
-  conditions: {
-    [K in ConditionsKeys]: Condition;
-  };
-};
-
 type OrderBy = {
   order: {
     field: string;
@@ -47,7 +39,7 @@ type OrderBy = {
 };
 
 type Select = {
-  select?: string[];
+  select: string[];
 };
 
 type ImageUploadType = "pictures" | "previews";
@@ -97,19 +89,36 @@ export class FirebaseService {
     collection: CollectionName,
     { condition }: SearchCondition,
     { select }: Select = { select: [] },
+    docId?: { id: string },
   ) {
-    return condition.field == "id"
-      ? this.findUniqueById(collection, condition.value, select)
-      : this.findUniqueByField(collection, { condition }, select);
+    const query = await this[collection as keyof FirebaseService].where(
+      condition.field,
+      "==",
+      condition.value,
+    );
+
+    if (select && select?.length > 0) {
+      query.select(...select);
+    }
+
+    let querySnapshot = await query.get();
+
+    const doc = !docId
+      ? querySnapshot.docs[0]
+      : querySnapshot.docs.filter(
+          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) =>
+            doc.id == docId.id,
+        )[0];
+    return !doc ? null : { id: doc.id, ...doc.data() };
   }
 
-  async findUniqueById(collection: CollectionName, docId: string, select?: string[]) {
+  async findUniqueById(collection: CollectionName, docId: string, select?: Select) {
     const docRef = await this[collection as keyof FirebaseService].doc(docId);
 
     const query = docRef;
 
-    if (select && select?.length > 0) {
-      query.select(...select);
+    if (select && select.select.length > 0) {
+      query.select(...select.select);
       Logger.log("select case");
     }
 
@@ -121,7 +130,8 @@ export class FirebaseService {
   async findUniqueByField(
     collection: CollectionName,
     { condition }: SearchCondition,
-    select?: string[],
+    select: string[] = [],
+    docId?: { id: string },
   ) {
     const query: firestore.Query = await this[collection as keyof FirebaseService].where(
       condition.field,
@@ -158,7 +168,15 @@ export class FirebaseService {
       query = query.where(condition.field, "==", condition.value);
     });
 
-    const querySnapshot = await query.select(selectionCondition).limit(1).get();
+    if (select && select.length) {
+      select.forEach((field: string) => {
+        query.select(field);
+      });
+
+      query.limit(1);
+    }
+
+    const querySnapshot = await query.get();
 
     return querySnapshot.docs.map(
       (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
@@ -208,31 +226,21 @@ export class FirebaseService {
     return id;
   }
 
-  async findUniqueResumeByMultipleConditions({ conditions }: MultipleConditions) {
-    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> =
-      await this.resumeCollection
-        .where(conditions.user.field, "==", conditions.user.value)
-        .where(conditions.slug.field, "==", conditions.slug.value)
-        .where(conditions.visibility.field, "==", conditions.visibility.value)
-        .get();
-
-    return querySnapshot.size > 1
-      ? null
-      : querySnapshot.docs.map(
-          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
-        )[0];
-  }
-  
-  async findUniqueOrThrow(collection: CollectionName, condition: SearchCondition, select?: Select) {
-    const data = await this.findUnique(collection, condition, select);
+  async findUniqueOrThrow(
+    collection: CollectionName,
+    condition: SearchCondition,
+    select?: Select,
+    docId?: { id: string },
+  ) {
+    const data = await this.findUnique(collection, condition, select, docId);
     if (!data) {
       throw new Error("Data not found");
     }
     return data;
   }
 
-  async findFirstResumeOrThrow(conditions: MultipleConditions) {
-    const data = await this.findUniqueResumeByMultipleConditions(conditions);
+  async findUniqueByIdOrThrow(collection: CollectionName, { id }: { id: string }, select?: Select) {
+    const data = await this.findUniqueById(collection, id, select);
     if (!data) {
       throw new Error("Data not found");
     }
@@ -255,14 +263,21 @@ export class FirebaseService {
     collection: CollectionName,
     { condition }: SearchCondition,
     { dto }: { dto: any },
+    docId?: { id: string },
   ) {
-    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
+    let querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
       collection as keyof FirebaseService
     ]
       .where(condition.field, "==", condition.value)
       .get();
 
-    const doc = querySnapshot.docs[0];
+    const doc = !docId
+      ? querySnapshot.docs[0]
+      : querySnapshot.docs.filter(
+          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) =>
+            doc.id == docId.id,
+        )[0];
+
     await doc.ref.set(dto, { merge: true });
     return { id: doc.id, ...doc.data() };
   }

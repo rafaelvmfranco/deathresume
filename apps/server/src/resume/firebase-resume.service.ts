@@ -102,14 +102,23 @@ export class FirebaseResumeService {
     );
   }
 
-  async findOne(id: string, userId: string = "") {
+  async findOne(id: string, userId?: string) {
     if (userId) {
       return this.utils.getCachedOrSet(
         `user:${userId}:resume:${id}`,
         async () =>
-          await this.firebaseService.findUniqueOrThrow("resumeCollection", {
-            condition: { field: "userId", value: id },
-          }),
+          await this.firebaseService.findUniqueOrThrow(
+            "resumeCollection",
+            {
+              condition: { field: "userId", value: userId },
+            },
+            { select: [] },
+            { id },
+          ),
+        await this.usageService.changeFieldByNumberBy1(userId || "", {
+          action: "increment",
+          field: "views",
+        }),
       );
     }
 
@@ -121,9 +130,13 @@ export class FirebaseResumeService {
     return this.utils.getCachedOrSet(
       `user:public:resume:${id}`,
       async () =>
-        await this.firebaseService.findUniqueOrThrow("resumeCollection", {
-          condition: { field: "id", value: id },
+        await this.firebaseService.findUniqueByIdOrThrow("resumeCollection", {
+          id,
         }),
+      await this.usageService.changeFieldByNumberBy1(userId || "", {
+        action: "increment",
+        field: "views",
+      }),
     );
   }
 
@@ -143,21 +156,21 @@ export class FirebaseResumeService {
   }
 
   async findOneByUsernameSlug(username: string, slug: string, userId: string = "") {
-    const resume = await this.firebaseService.findFirstResumeOrThrow({
-      conditions: {
-        user: {
+    const resume = await this.firebaseService.findFirstOrThrow("resumeCollection", {
+      conditions: [
+        {
           field: "user",
           value: { username },
         },
-        slug: {
+        {
           field: "slug",
           value: slug,
         },
-        visibility: {
+        {
           field: "visibility",
           value: "public",
         },
-      },
+      ],
     });
 
     // Update statistics: increment the number of views by 1
@@ -172,13 +185,10 @@ export class FirebaseResumeService {
   }
 
   async update(userId: string, id: string, updateResumeDto: UpdateResumeDto) {
-    const { locked } = await this.firebaseService.findUniqueOrThrow(
+    const { locked } = await this.firebaseService.findUniqueByIdOrThrow(
       "resumeCollection",
       {
-        condition: {
-          field: "id",
-          value: id,
-        },
+        id
       },
       { select: ["locked"] },
     );
@@ -201,6 +211,7 @@ export class FirebaseResumeService {
           data: updateResumeDto.data,
         },
       },
+      { id },
     );
 
     await Promise.all([
@@ -225,6 +236,7 @@ export class FirebaseResumeService {
           locked: set,
         },
       },
+      { id },
     );
 
     await Promise.all([
