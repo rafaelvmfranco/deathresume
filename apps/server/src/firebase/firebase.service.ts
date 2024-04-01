@@ -77,11 +77,14 @@ export class FirebaseService {
   }
 
   async create(collection: CollectionName, { dto }: { dto: any }, docId?: string) {
-    const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
-    await this[collection as keyof FirebaseService].doc(docId || createId());
-    await docRef.set(dto, { merge: true });
+    const docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> = await this[
+      collection as keyof FirebaseService
+    ].doc(docId || createId());
+    
+    const response = await docRef.set(dto, { merge: true });
     const docSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
-    await docRef.get();
+      await docRef.get();
+
     return { id: docRef.id, ...docSnapshot.data() };
   }
 
@@ -109,50 +112,25 @@ export class FirebaseService {
           (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) =>
             doc.id == docId.id,
         )[0];
+
+    Logger.log("querySnapshot.size", querySnapshot.size);
     return !doc ? null : { id: doc.id, ...doc.data() };
   }
 
   async findUniqueById(collection: CollectionName, docId: string, select?: Select) {
     const docRef = await this[collection as keyof FirebaseService].doc(docId);
-
-    const query = docRef;
+    const doc = await docRef.get();
+    const docData = doc.data();
 
     if (select && select.select.length > 0) {
-      query.select(...select.select);
-      Logger.log("select case");
+      Object.keys(doc).forEach((key: string) => {
+        if (!select.select.includes(key)) {
+          delete doc[key];
+        }
+      });
     }
 
-    const doc = await docRef.get();
-    Logger.log("doc.data()", JSON.stringify(doc.data()));
-    return { id: docId, ...doc.data() };
-  }
-
-  async findUniqueByField(
-    collection: CollectionName,
-    { condition }: SearchCondition,
-    select: string[] = [],
-    docId?: { id: string },
-  ) {
-    const query: firestore.Query = await this[collection as keyof FirebaseService].where(
-      condition.field,
-      "==",
-      condition.value,
-    );
-
-    if (select && select?.length > 0) {
-      query.select(...select);
-    }
-
-    const querySnapshot = await query.get();
-
-    return querySnapshot.size < 1
-      ? null
-      : querySnapshot.docs.map(
-          (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => ({
-            id: doc.id,
-            ...doc.data(),
-          }),
-        )[0];
+    return { id: docId, ...docData };
   }
 
   async findFirst(
@@ -160,8 +138,6 @@ export class FirebaseService {
     { conditions }: SearchConditions,
     { select }: Select = { select: [] },
   ) {
-    const selectionCondition = select && select.length > 0 ? select.join(",") : "*";
-
     let query: firestore.Query = this[collection as keyof FirebaseService];
 
     conditions.forEach((condition) => {
@@ -234,6 +210,7 @@ export class FirebaseService {
   ) {
     const data = await this.findUnique(collection, condition, select, docId);
     if (!data) {
+      Logger.log("falls here")
       throw new Error("Data not found");
     }
     return data;
@@ -329,7 +306,7 @@ export class FirebaseService {
     const docRef = await this[collection as keyof FirebaseService].doc(docId);
     const doc = (await docRef.get()).data();
     await docRef.delete();
-    return { id: docId, doc };
+    return { id: docId, ...doc };
   }
 
   async bucketExists() {

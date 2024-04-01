@@ -4,8 +4,18 @@ import {
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import { CreateResumeDto, ImportResumeDto, ResumeDto, UpdateResumeDto } from "@reactive-resume/dto";
-import { defaultResumeData, ResumeData } from "@reactive-resume/schema";
+import {
+  CreateResumeDto,
+  ImportResumeDto,
+  ResumeDto,
+  UpdateResumeDto,
+  ResumeWithStrigifiedLayout,
+} from "@reactive-resume/dto";
+import {
+  defaultResumeData,
+  ResumeData,
+  ResumeDataWithStringifiedLayout,
+} from "@reactive-resume/schema";
 import type { DeepPartial } from "@reactive-resume/utils";
 import { generateRandomName, kebabCase } from "@reactive-resume/utils";
 import { ErrorMessage } from "@reactive-resume/utils";
@@ -35,9 +45,9 @@ export class FirebaseResumeService {
 
   async create(userId: string, createResumeDto: CreateResumeDto) {
 
-    const { name, email, picture } = await this.firebaseService.findUniqueOrThrow(
+    const { name, email, picture } = await this.firebaseService.findUniqueByIdOrThrow(
       "userCollection",
-      { condition: { field: "id", value: userId } },
+      { id: userId },
       { select: ["name", "email", "picture"] },
     );
 
@@ -45,15 +55,17 @@ export class FirebaseResumeService {
       basics: { name, email, picture: { url: picture ?? "" } },
     } satisfies DeepPartial<ResumeData>);
 
-    const resume = await this.firebaseService.create("resumeCollection", {
+    const resumeDto = this.stringifyResumeLayout(data);
+
+    const resume = (await this.firebaseService.create("resumeCollection", {
       dto: {
-        data,
+        data: resumeDto,
         userId,
         title: createResumeDto.title,
         visibility: createResumeDto.visibility,
         slug: createResumeDto.slug ?? kebabCase(createResumeDto.title),
       },
-    });
+    })) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
@@ -64,21 +76,23 @@ export class FirebaseResumeService {
       }),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async import(userId: string, importResumeDto: ImportResumeDto) {
     const randomTitle = generateRandomName();
 
-    const resume = await this.firebaseService.create("resumeCollection", {
+    const resumeData = this.stringifyResumeLayout(importResumeDto.data);
+
+    const resume = (await this.firebaseService.create("resumeCollection", {
       dto: {
         userId,
         visibility: "private",
-        data: importResumeDto.data,
+        data: resumeData,
         title: importResumeDto.title || randomTitle,
         slug: importResumeDto.slug || kebabCase(randomTitle),
       },
-    });
+    })) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
@@ -89,55 +103,54 @@ export class FirebaseResumeService {
       }),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   findAll(userId: string) {
-    return this.utils.getCachedOrSet(`user:${userId}:resumes`, async () =>
-      await this.firebaseService.findManyAndOrder(
+    return this.utils.getCachedOrSet(`user:${userId}:resumes`, async () => {
+      const resumes = await this.firebaseService.findManyAndOrder(
         "resumeCollection",
         { condition: { field: "userId", value: userId } },
         { order: { field: "updatedAt", by: "desc" } },
-      ),
-    );
+      );
+
+      return resumes.map((resume: ResumeWithStrigifiedLayout) => this.parseResumeLayout(resume));
+    });
   }
 
   async findOne(id: string, userId?: string) {
     if (userId) {
-      return this.utils.getCachedOrSet(
-        `user:${userId}:resume:${id}`,
-        async () =>
-          await this.firebaseService.findUniqueOrThrow(
-            "resumeCollection",
-            {
-              condition: { field: "userId", value: userId },
-            },
-            { select: [] },
-            { id },
-          ),
+      return this.utils.getCachedOrSet(`user:${userId}:resume:${id}`, async () => {
+        const resume = (await this.firebaseService.findUniqueOrThrow(
+          "resumeCollection",
+          {
+            condition: { field: "userId", value: userId },
+          },
+          { select: [] },
+          { id },
+        )) as ResumeWithStrigifiedLayout;
+
         await this.usageService.changeFieldByNumberBy1(userId || "", {
           action: "increment",
           field: "views",
-        }),
-      );
+        });
+
+        return this.parseResumeLayout(resume);
+      });
     }
 
-    await this.usageService.changeFieldByNumberBy1(userId, {
-      action: "increment",
-      field: "views",
-    });
+    return this.utils.getCachedOrSet(`user:public:resume:${id}`, async () => {
+      const resume = (await this.firebaseService.findUniqueByIdOrThrow("resumeCollection", {
+        id,
+      })) as ResumeWithStrigifiedLayout;
 
-    return this.utils.getCachedOrSet(
-      `user:public:resume:${id}`,
-      async () =>
-        await this.firebaseService.findUniqueByIdOrThrow("resumeCollection", {
-          id,
-        }),
       await this.usageService.changeFieldByNumberBy1(userId || "", {
         action: "increment",
         field: "views",
-      }),
-    );
+      });
+
+      return this.parseResumeLayout(resume);
+    });
   }
 
   async findOneStatistics(userId: string, id: string) {
@@ -156,11 +169,15 @@ export class FirebaseResumeService {
   }
 
   async findOneByUsernameSlug(username: string, slug: string, userId: string = "") {
-    const resume = await this.firebaseService.findFirstOrThrow("resumeCollection", {
+    const user = await this.firebaseService.findUniqueOrThrow("userCollection", {
+      condition: { field: username, value: username },
+    });
+
+    const resume = (await this.firebaseService.findFirstOrThrow("resumeCollection", {
       conditions: [
         {
-          field: "user",
-          value: { username },
+          field: "userId",
+          value: user.id,
         },
         {
           field: "slug",
@@ -171,7 +188,7 @@ export class FirebaseResumeService {
           value: "public",
         },
       ],
-    });
+    })) as ResumeWithStrigifiedLayout;
 
     // Update statistics: increment the number of views by 1
     await this.usageService.changeFieldByNumberBy1(userId, {
@@ -181,7 +198,7 @@ export class FirebaseResumeService {
 
     //if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:views`);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async update(userId: string, id: string, updateResumeDto: UpdateResumeDto) {
@@ -195,7 +212,7 @@ export class FirebaseResumeService {
 
     if (locked) throw new BadRequestException(ErrorMessage.ResumeLocked);
 
-    const resume = await this.firebaseService.updateItem(
+    const resume = (await this.firebaseService.updateItem(
       "resumeCollection",
       {
         condition: {
@@ -208,27 +225,27 @@ export class FirebaseResumeService {
           title: updateResumeDto.title,
           slug: updateResumeDto.slug,
           visibility: updateResumeDto.visibility,
-          data: updateResumeDto.data,
+          data: this.stringifyResumeLayout((updateResumeDto as any).data),
         },
       },
       { id },
-    );
+    )) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
       this.redis.del(`user:${userId}:resumes`),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async lock(userId: string, id: string, set: boolean) {
-    const resume = await this.firebaseService.updateItem(
+    const resume = (await this.firebaseService.updateItem(
       "resumeCollection",
       {
         condition: {
-          field: "userId_id",
-          value: { userId, id },
+          field: "userId",
+          value: userId,
         },
       },
       {
@@ -237,14 +254,14 @@ export class FirebaseResumeService {
         },
       },
       { id },
-    );
+    )) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
       this.redis.del(`user:${userId}:resumes`),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async remove(userId: string, id: string) {
@@ -264,7 +281,8 @@ export class FirebaseResumeService {
       }),
     ]);
 
-    return this.firebaseService.deleteByDocId("resumeCollection", id);
+    const response = await this.firebaseService.deleteByDocId("resumeCollection", id);
+    return this.parseResumeLayout(response);
   }
 
   async printResume(resume: ResumeDto, userId: string = "") {
@@ -281,5 +299,28 @@ export class FirebaseResumeService {
 
   async printPreview(resume: ResumeDto) {
     return await this.printerService.printPreview(resume);
+  }
+
+  parseResumeLayout(resume: ResumeWithStrigifiedLayout): ResumeDto {
+    return {
+      ...resume,
+      data: {
+        ...resume.data,
+        metadata: {
+          ...resume.data.metadata,
+          layout: JSON.parse(resume.data.metadata.layout),
+        },
+      },
+    };
+  }
+
+  stringifyResumeLayout(resumeData: ResumeData): ResumeDataWithStringifiedLayout {
+    return {
+      ...resumeData,
+      metadata: {
+        ...resumeData.metadata,
+        layout: JSON.stringify(resumeData.metadata.layout),
+      },
+    };
   }
 }

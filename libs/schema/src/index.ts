@@ -11,8 +11,16 @@ export const resumeDataSchema = z.object({
   metadata: metadataSchema,
 });
 
+export const resumeDataSchemaWithStringifiedLayout = resumeDataSchema.extend({
+  metadata: metadataSchema.extend({
+    layout: z.string(),
+  }),
+});
+
 // Type
 export type ResumeData = z.infer<typeof resumeDataSchema>;
+
+export type ResumeDataWithStringifiedLayout = z.infer<typeof resumeDataSchemaWithStringifiedLayout>;
 
 // Defaults
 export const defaultResumeData: ResumeData = {
