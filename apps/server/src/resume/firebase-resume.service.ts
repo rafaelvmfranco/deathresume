@@ -64,6 +64,8 @@ export class FirebaseResumeService {
         title: createResumeDto.title,
         visibility: createResumeDto.visibility,
         slug: createResumeDto.slug ?? kebabCase(createResumeDto.title),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     })) as ResumeWithStrigifiedLayout;
 
@@ -91,6 +93,8 @@ export class FirebaseResumeService {
         data: resumeData,
         title: importResumeDto.title || randomTitle,
         slug: importResumeDto.slug || kebabCase(randomTitle),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     })) as ResumeWithStrigifiedLayout;
 
@@ -108,7 +112,7 @@ export class FirebaseResumeService {
 
   findAll(userId: string) {
     return this.utils.getCachedOrSet(`user:${userId}:resumes`, async () => {
-      const resumes = await this.firebaseService.findManyAndOrder(
+      const resumes = await this.firebaseService.findMany(
         "resumeCollection",
         { condition: { field: "userId", value: userId } },
         { order: { field: "updatedAt", by: "desc" } },
@@ -226,6 +230,7 @@ export class FirebaseResumeService {
           slug: updateResumeDto.slug,
           visibility: updateResumeDto.visibility,
           data: this.stringifyResumeLayout((updateResumeDto as any).data),
+          updatedAt: new Date().toISOString(),
         },
       },
       { id },
@@ -251,6 +256,7 @@ export class FirebaseResumeService {
       {
         dto: {
           locked: set,
+          updatedAt: new Date().toISOString(),
         },
       },
       { id },

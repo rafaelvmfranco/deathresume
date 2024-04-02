@@ -78,7 +78,7 @@ export class AuthService {
       secrets: {
         update: {
           refreshToken: token,
-          lastSignedIn: new Date(),
+          lastSignedIn: new Date().toISOString(),
         },
       },
     });

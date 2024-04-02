@@ -159,32 +159,29 @@ export class FirebaseService {
     )[0];
   }
 
-  async findMany(collection: CollectionName, condition?: SearchCondition) {
+  async findMany(collection: CollectionName, condition?: SearchCondition | null, order?: OrderBy | null) {
     let query: firestore.Query = this[collection as keyof FirebaseService];
 
-    if (condition) {
-      query = query.where(condition.condition.field, "==", condition.condition.value);
+    if (condition && order) {
+      query = query
+        .where(condition.condition.field, "==", condition.condition.value)
+        .orderBy(order.order.field, order.order.by);
+    } else {
+      if (condition) {
+        query = query.where(condition.condition.field, "==", condition.condition.value);
+      }
+
+      if (order) {
+        query = query.orderBy(order.order.field, order.order.by);
+      }
     }
 
-    return (await query.get()).docs.map(
-      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
-    );
-  }
+    const snapshot = await query.get();
 
-  async findManyAndOrder(
-    collection: CollectionName,
-    { condition }: SearchCondition,
-    { order }: OrderBy,
-  ) {
-    const querySnapshot: firestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this[
-      collection as keyof FirebaseService
-    ]
-      .where(condition.field, "==", condition.value)
-      .orderBy(order.field, order.by)
-      .get();
-
-    return querySnapshot.docs.map(
-      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+    return snapshot.docs.map(
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+        return { id: doc.id, ...doc.data() };
+      },
     );
   }
 
