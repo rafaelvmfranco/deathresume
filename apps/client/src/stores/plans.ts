@@ -1,6 +1,5 @@
 import { PlanDto } from "@reactive-resume/dto";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface PlansState {
   plans: PlanDto[];

@@ -4,78 +4,93 @@ import { ScrollArea, Separator } from "@reactive-resume/ui";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
-type PlanName = "free" | "plus" | "premium" | "enterprise";
+import { useGetUsage } from "@/client/services/usage";
+import { useGetSubcription } from "@/client/services/subcription";
+import {
+  Period,
+  PlanDto,
+  SubcriptionWithPlan,
+  UsageDto,
+  UsageUpdateFields,
+  PeriodName,
+} from "@reactive-resume/dto";
 
-type PlanObject = "resumes" | "downloads" | "views" | "alWords";
-
-type Usage = {
-  name: string;
+type BarData = {
+  style: string;
   currentNumber: number;
-  limitNumber: number | null;
+  limitNumber: string | number | null;
+  name: UsageUpdateFields;
+  startNumber: number;
+  endNumber: number | null;
+  title: string;
 };
 
-type PlanUsage = {
-  plan: PlanName;
-  usage: Usage[];
+const isPlanFree = (data: PlanDto | undefined) => {
+  if (!data) return true;
+  return data.name === "free" ? true : false;
 };
 
-const fakeObject: PlanUsage = {
-  plan: "free",
-  usage: [
-    { name: "resumes", currentNumber: 3, limitNumber: 20 },
-    { name: "downloads", currentNumber: 230, limitNumber: 400 },
-    { name: "views", currentNumber: 12000, limitNumber: 600000 },
-    { name: "alWords", currentNumber: 15000, limitNumber: 16000 },
-  ],
-};
-
-const isPlanFree = (data: PlanUsage) => {
-  return data.plan === "free" ? true : false;
-};
-
-function getPlanTitle(data: PlanUsage) {
-  const str = data.plan;
+function getPlanTitle(data: PlanDto | undefined) {
+  if (!data) return "Your plan";
+  const str = data.name;
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const getUsageData = (usage: Usage) => {
-  let style = "";
-  let title = "";
+const getUsageBars = (subscription: SubcriptionWithPlan | null, usage: UsageDto): BarData[] => {
+  let bars: {
+    name: UsageUpdateFields;
+    title: string;
+    style: string;
+  }[] = [
+    {
+      name: "resumes",
+      title: "Resumes",
+      style:
+        "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-green-600",
+    },
+    {
+      name: "views",
+      title: "Views",
+      style:
+        "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-amber-600",
+    },
+    {
+      name: "downloads",
+      title: "Downloads",
+      style:
+        "w-full progress-unfilled:bg-slate-300 progress-filled:border-transparent progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-red-600",
+    },
+    {
+      name: "alWords",
+      title: "Al words",
+      style:
+        "w-full progress-unfilled:bg-slate-300 rounded-lg progress-filled:rounded-lg progress-filled:bg-violet-600",
+    },
+  ];
 
-  switch (usage.name || "") {
-    case "resumes":
-      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-green-600";
-      title = "Resumes";
-      break;
-    case "downloads":
-      style = "w-full progress-unfilled:bg-slate-300 progress-filled:border-transparent progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-red-600";
-      title = "Downloads";
-      break;
-    case "views":
-      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-amber-600";
-      title = "Views";
-      break;
-    case "alWords":
-      style = "w-full progress-unfilled:bg-slate-300 progress-unfilled:rounded-lg progress-filled:rounded-lg progress-filled:bg-blue-600";
-      title = "Al words";
-      break;
-    default:
-      style = "w-full progress-unfilled:bg-slate-300 rounded-lg progress-filled:rounded-lg progress-filled:bg-violet-600";
-      title = "";
-  }
+  const period: PeriodName | undefined = subscription?.period?.name || "year";
 
-  return {
-    progressBarStyling: style,
-    currentNumber: usage.currentNumber,
-    limitNumber: usage.limitNumber ? usage.limitNumber : "Unlimited",
-    name: usage.name,
-    startNumber: usage.limitNumber ? usage.currentNumber : 0,
-    endNumber: usage.limitNumber ? usage.limitNumber : 100,
-    title,
-  };
+  const updatedBars: BarData[] = bars.map((bar: { name: UsageUpdateFields; title: string; style: string }) => {
+    return {
+      ...bar,
+      currentNumber: usage[bar.name],
+      limitNumber: subscription?.plan[period].max[bar.name]
+        ? subscription?.plan[period].max[bar.name]
+        : "Unlimited",
+      startNumber: !subscription?.plan[period].max[bar.name] ? 0 : usage[bar.name],
+      endNumber: subscription?.plan[period].max[bar.name]    
+        ? subscription?.plan[period].max[bar.name]
+        : 100,
+    };
+  });
+
+  return updatedBars;
 };
 
 export const UsagePage = () => {
+  const { usage } = useGetUsage();
+  const { subscription } = useGetSubcription();
+
   return (
     <>
       <Helmet>
@@ -93,32 +108,32 @@ export const UsagePage = () => {
           {t`Usage`}
         </motion.h1>
 
-        {fakeObject.usage
-          .map((usageItem) => getUsageData(usageItem))
-          .map((usageItem) => (
-            <div key={usageItem.name}>
+        {subscription &&
+          usage &&
+          getUsageBars(subscription, usage).map((bar: BarData) => (
+            <div key={bar.name}>
               <h3 className="text-2xl font-bold leading-relaxed tracking-tight">
-                {t`${usageItem.title}`}
+                {t`${bar.title}`}
               </h3>
               <progress
                 id="file"
-                value={usageItem.startNumber}
-                max={usageItem.endNumber}
-                className={usageItem.progressBarStyling}
+                value={bar.startNumber}
+                max={bar.endNumber || 100}
+                className={bar.style}
               ></progress>
               <p className="leading-relaxed opacity-75">
-                {usageItem.currentNumber}/{usageItem.limitNumber}
+                {bar.currentNumber}/{bar.limitNumber}
               </p>
             </div>
           ))}
         <div className="flex justify-between align-center">
           <div className="flex justify-center items-center text-lg font-bold">
-            <span>{getPlanTitle(fakeObject)}</span>
+            <span>{getPlanTitle(subscription?.plan)}</span>
           </div>
 
-          <Link to={isPlanFree(fakeObject) ? "/plans" : "/stripe-route"}>
+          <Link to={isPlanFree(subscription?.plan) ? "/plans" : "/stripe-route"}>
             <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
-              {isPlanFree(fakeObject) ? `${t`Upgrade`}` : "Manage subcription"}
+              {isPlanFree(subscription?.plan) ? `${t`Upgrade`}` : "Manage subcription"}
             </button>
           </Link>
         </div>

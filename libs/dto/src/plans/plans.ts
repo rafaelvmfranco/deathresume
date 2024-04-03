@@ -2,7 +2,7 @@ import { createZodDto } from "nestjs-zod/dto";
 import { z } from "nestjs-zod/z";
 
 
-const PlanName = z.enum(["free", "plus", "premium", "enterprise"]);
+export const PlanNameSchema = z.enum(["free", "plus", "premium", "enterprise"]);
 
 const maxContent = z.object({
   resumes: z.number().nullable(),
@@ -17,10 +17,10 @@ const planContent = z.object({
 });
 
 export const planSchema = z.object({
-  name: PlanName,
+  name: PlanNameSchema,
   year: planContent,
   month: planContent,
 });
 
 export class PlanDto extends createZodDto(planSchema) {}
-export type PlanName = z.infer<typeof PlanName>;
+export type PlanName = z.infer<typeof PlanNameSchema>;

@@ -4,8 +4,10 @@ import { z } from "nestjs-zod/z";
 
 import { planSchema } from "../plans";
 
+const PeriodNameSchema = z.enum(["month", "year"]);
+
 const Period = z.object({
-  name: z.enum(["month", "year"]),
+  name: PeriodNameSchema,
   monthlyPayments: z.number().refine((value) => value === 1 || value === 12),
 });
 
@@ -31,4 +33,5 @@ export const subcriptionWithPlanSchema = subcriptionSchema.merge(z.object({ plan
 
 export class SubcriptionWithPlan extends createZodDto(subcriptionWithPlanSchema) {}
 
+export type PeriodName = z.infer<typeof PeriodNameSchema>
 export type Period = z.infer<typeof Period>;

@@ -5,8 +5,6 @@ import { axios } from "@/client/libs/axios";
 import { usePlansStore } from "@/client/stores/plans";
 
 import { PLANS_KEY } from "@/client/constants/query-keys";
-import { useEffect } from "react";
-import set from "lodash.set";
 
 export const getPlans = async () => {
   const response = await axios.get<PlanDto[]>("/plans");
@@ -29,7 +27,7 @@ export const useGetPlans = () => {
   return { plans, loading, error };
 };
 
-export const transformPlan = (plan: PlanDto, currentPeriod: Period) => {
+export const transformPlan = (plan: PlanDto, currentPeriod: "month" | "year") => {
   const planByPeriod = plan[currentPeriod];
 
   return {
