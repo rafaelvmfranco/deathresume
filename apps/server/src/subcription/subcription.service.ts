@@ -46,7 +46,7 @@ export class SubcriptionService {
         startPaymentAt: null,
         lastPaymentAt: null,
         activeUntil: Infinity,
-        createdAt: Date.now(),
+        createdAt: new Date().toISOString(),
       },
     });
   }
