@@ -1,43 +1,38 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
 import { FirebaseService } from "../firebase/firebase.service";
-import { SubcriptionDto, SubcriptionWithPlan, PlanDto } from "@reactive-resume/dto";
+import { SubscriptionDto, SubscriptionWithPlan, PlanDto } from "@reactive-resume/dto";
 import { PlanService } from "../plan/plan.service";
 
 @Injectable()
-export class SubcriptionService {
+export class SubscriptionService {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly planService: PlanService,
   ) {}
 
-  async getByUserId(userId: string): Promise<SubcriptionWithPlan> {
-    const subcription = (await this.firebaseService.findUnique("subcriptionCollection", {
+  async getByUserId(userId: string): Promise<SubscriptionWithPlan> {
+    const subscription = (await this.firebaseService.findUnique("subscriptionCollection", {
       condition: {
         field: "userId",
-        value: userId,
+        value: "d380omau47j3ts06h3fo6qda",
       },
-    })) as SubcriptionDto;
+    })) as SubscriptionDto;
 
-    const planId = subcription.planId;
+    const planId = subscription.planId;
 
-    const plan = (await this.firebaseService.findUnique("planCollection", {
-      condition: {
-        field: "id",
-        value: planId,
-      },
-    })) as PlanDto;
+    const plan = (await this.firebaseService.findUniqueById("planCollection", planId)) as PlanDto;
 
     return {
-      ...subcription,
+      ...subscription,
       plan,
     };
   }
 
-  async setDefaultSubcription(userId: string) {
+  async setDefaultSubscription(userId: string) {
     const freePlanId = await this.planService.getFreePlanId();
 
-    return await this.firebaseService.create("subcriptionCollection", {
+    return await this.firebaseService.create("subscriptionCollection", {
       dto: {
         planId: freePlanId,
         userId,
@@ -51,10 +46,10 @@ export class SubcriptionService {
     });
   }
 
-  async stopSubcription(userId: string) {
+  async stopSubscription(userId: string) {
     // stop payment
 
-    return await this.firebaseService.deleteByField("subcriptionCollection", {
+    return await this.firebaseService.deleteByField("subscriptionCollection", {
       condition: { field: "userId", value: userId },
     });
   }

@@ -16,7 +16,7 @@ type CollectionName =
   | "planCollection"
   | "resumeCollection"
   | "usageCollection"
-  | "subcriptionCollection";
+  | "subscriptionCollection";
 
 type Condition = {
   field: string;
@@ -54,7 +54,7 @@ export class FirebaseService {
   planCollection: FirebaseFirestore.CollectionReference;
   resumeCollection: FirebaseFirestore.CollectionReference;
   usageCollection: FirebaseFirestore.CollectionReference;
-  subcriptionCollection: FirebaseFirestore.CollectionReference;
+  subscriptionCollection: FirebaseFirestore.CollectionReference;
 
   bucket: any;
   storageBucket: string;
@@ -69,7 +69,7 @@ export class FirebaseService {
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
     this.usageCollection = this.db.collection("usage");
-    this.subcriptionCollection = this.db.collection("subcriptions");
+    this.subscriptionCollection = this.db.collection("subscriptions");
 
     this.storageBucket = this.configService.getOrThrow<string>("STORAGE_BUCKET");
     this.bucket = admin.storage().bucket(this.storageBucket);
@@ -94,6 +94,7 @@ export class FirebaseService {
     { select }: Select = { select: [] },
     docId?: { id: string },
   ) {
+    console.log("docId", docId)
     const query = await this[collection as keyof FirebaseService].where(
       condition.field,
       "==",
@@ -113,13 +114,12 @@ export class FirebaseService {
             doc.id == docId.id,
         )[0];
 
-    Logger.log("querySnapshot.size", querySnapshot.size);
     return !doc ? null : { id: doc.id, ...doc.data() };
   }
 
   async findUniqueById(collection: CollectionName, docId: string, select?: Select) {
     const docRef = await this[collection as keyof FirebaseService].doc(docId);
-    const doc = await docRef.get();
+    const doc = await docRef.get({ source: "server"});
     const docData = doc.data();
 
     if (select && select.select.length > 0) {
@@ -207,7 +207,7 @@ export class FirebaseService {
   ) {
     const data = await this.findUnique(collection, condition, select, docId);
     if (!data) {
-      Logger.log("falls here")
+      Logger.log("falls here");
       throw new Error("Data not found");
     }
     return data;
@@ -253,7 +253,10 @@ export class FirebaseService {
         )[0];
 
     await doc.ref.set(dto, { merge: true });
-    return { id: doc.id, ...doc.data() };
+
+    const updatedDocData = (await doc.ref.get()).data();
+
+    return { id: doc.id, ...updatedDocData };
   }
 
   async changeFieldByNumber(

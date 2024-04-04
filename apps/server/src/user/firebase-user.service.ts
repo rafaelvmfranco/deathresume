@@ -1,12 +1,12 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { firestore } from "firebase-admin";
-import { UserWithSecrets } from "@reactive-resume/dto";
+import { UserDto, UserWithSecrets } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import Redis from "ioredis";
 import { FirebaseService } from "../firebase/firebase.service";
 import { UsageService } from "../usage/usage.service";
-import { SubcriptionService } from "../subcription/subcription.service";
+import { SubscriptionService } from "../subscription/subscription.service";
 import { createId } from "@paralleldrive/cuid2";
 
 @Injectable()
@@ -17,7 +17,7 @@ export class FirebaseUserService {
     private readonly redisService: RedisService,
     private readonly firebaseService: FirebaseService,
     private readonly usageService: UsageService,
-    private readonly subcriptionService: SubcriptionService,
+    private readonly subscriptionService: SubscriptionService,
   ) {
     this.redis = this.redisService.getClient();
   }
@@ -69,7 +69,6 @@ export class FirebaseUserService {
       ? {
           ...data,
           secrets: {
-            id: userId,
             ...data?.secrets.create,
             id: createId(),
             userId: userId,
@@ -90,20 +89,24 @@ export class FirebaseUserService {
       },
       userId,
     );
+
     await Promise.all([
       this.usageService.create(userId),
-      this.subcriptionService.setDefaultSubcription(userId),
+      this.subscriptionService.setDefaultSubscription(userId),
     ]);
+  
+    Logger.log("Firebase user service - create", JSON.stringify(user));
     return user;
   }
 
   async updateByEmail(email: string, data: any) {
+    Logger.log("Firebase user service - updateByEmail");
     const updateDto = data?.secrets ? { secrets: data.secrets.update } : data;
 
     const user = await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "email", value: email } },
-      { dto: { ...updateDto, updatedAt: new Date() } },
+      { dto: { ...updateDto, updatedAt: new Date().toISOString() } },
     );
 
     delete (user as any).secrets;
@@ -116,16 +119,17 @@ export class FirebaseUserService {
     await this.firebaseService.updateItem(
       "userCollection",
       { condition: { field: "resetToken", value: resetToken } },
-      { dto: { ...updateDto, updatedAt: new Date() } },
+      { dto: { ...updateDto, updatedAt: new Date().toISOString() } },
     );
   }
 
   async deleteOneById(id: string) {
+    Logger.log("deleteOneById: id", id);
     await Promise.all([
       this.redis.del(`user:${id}:*`),
       this.firebaseService.deleteFolder(id),
       this.usageService.deleteByUserId(id),
-      this.subcriptionService.stopSubcription(id),
+      this.subscriptionService.stopSubscription(id),
     ]);
 
     return await this.firebaseService.deleteByDocId("userCollection", id);

@@ -6,9 +6,10 @@ import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 import { FirebaseUserService } from "./firebase-user.service";
 import { UsageModule } from "../usage/usage.module";
+import { SubscriptionModule } from "../subscription/subscription.module";
 
 @Module({
-  imports: [forwardRef(() => AuthModule.register()), FirebaseModule, UsageModule],
+  imports: [forwardRef(() => AuthModule.register()), FirebaseModule, UsageModule, SubscriptionModule],
   controllers: [UserController],
   providers: [UserService, FirebaseUserService],
   exports: [UserService, FirebaseUserService],

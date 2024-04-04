@@ -15,7 +15,7 @@ const paymentContent = z.object({
   fakeData: z.string(),
 });
 
-export const subcriptionSchema = z.object({
+export const subscriptionSchema = z.object({
   id: z.string().optional(),
   userId: idSchema,
   planId: idSchema,
@@ -27,11 +27,11 @@ export const subcriptionSchema = z.object({
   createdAt: z.number(),
 });
 
-export class SubcriptionDto extends createZodDto(subcriptionSchema) {}
+export class SubscriptionDto extends createZodDto(subscriptionSchema) {}
 
-export const subcriptionWithPlanSchema = subcriptionSchema.merge(z.object({ plan: planSchema }));
+export const subscriptionWithPlanSchema = subscriptionSchema.merge(z.object({ plan: planSchema }));
 
-export class SubcriptionWithPlan extends createZodDto(subcriptionWithPlanSchema) {}
+export class SubscriptionWithPlan extends createZodDto(subscriptionWithPlanSchema) {}
 
 export type PeriodName = z.infer<typeof PeriodNameSchema>
 export type Period = z.infer<typeof Period>;
