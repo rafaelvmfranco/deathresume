@@ -27,6 +27,7 @@ export class UsageController {
   @Patch()
   @UseGuards(TwoFactorGuard)
   async changeFieldNumber(@User() user: UserEntity, @Body() updateDto: UpdateUsageDto) {
+    if (updateDto.field === "alWords") return await this.usageService.addAlWords(user.id, updateDto.value);
     return await this.usageService.changeFieldByNumberBy1(user.id, updateDto);
   }
 

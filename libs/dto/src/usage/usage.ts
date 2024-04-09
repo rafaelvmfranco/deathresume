@@ -24,4 +24,5 @@ export type ChangeFieldAction = z.infer<typeof actionTypes>;
 export type UpdateUsageDto = {
   action: z.infer<typeof actionTypes>;
   field: z.infer<typeof updateFields>;
+  value?: any;
 };

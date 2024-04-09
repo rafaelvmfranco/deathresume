@@ -42,7 +42,25 @@ export class UsageService {
           value: 1,
         },
       },
-      updateDto.action
+      updateDto.action,
+    );
+  }
+
+  async addAlWords(userId: string, alWordsAmount: number) {
+    return await this.firebaseService.updateItem(
+      "usageCollection",
+      {
+        condition: {
+          field: "userId",
+          value: userId,
+        },
+      },
+      {
+        dto: {
+          field: "alWords",
+          value: alWordsAmount,
+        },
+      },
     );
   }
 

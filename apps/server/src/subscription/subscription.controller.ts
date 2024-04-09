@@ -16,4 +16,11 @@ export class SubscriptionController {
   async findByUserId(@User() user: UserEntity): Promise<SubscriptionWithPlan> {
     return await this.subscriptionService.getByUserId(user.id);
   }
+
+  @Get("show")
+  @UseGuards(TwoFactorGuard)
+  ifShowOne(@User() user: UserEntity) {
+    return this.subscriptionService.ifShowResume(user.id);
+  }
+
 }

@@ -12,3 +12,4 @@ export const RESUME_PREVIEW_KEY: QueryKey = ["resume", "preview"];
 export const PLANS_KEY: QueryKey = ["plans"];
 export const USAGE_KEY: QueryKey = ["usage"];
 export const SUBSCRIPTION_KEY: QueryKey = ["subscription"];
+export const SHOW_RESUME_KEY: QueryKey = ["showresume"];

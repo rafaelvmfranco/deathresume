@@ -4,6 +4,7 @@ import { cn } from "@reactive-resume/utils";
 import { Outlet } from "react-router-dom";
 
 import { useBuilderStore } from "@/client/stores/builder";
+import { useIfShowResume } from "@/client/services/resume/ifToShow";
 
 import { BuilderHeader } from "./_components/header";
 import { BuilderToolbar } from "./_components/toolbar";
@@ -11,11 +12,8 @@ import { UpgradePopup } from "./_components/ugrade";
 import { LeftSidebar } from "./sidebars/left";
 import { RightSidebar } from "./sidebars/right";
 
-const checkedToOpen = true;
-
 const OutletSlot = () => (
   <>
-    {checkedToOpen && <UpgradePopup />}
     <BuilderHeader />
 
     <div className="absolute inset-0">
@@ -28,6 +26,8 @@ const OutletSlot = () => (
 
 export const BuilderLayout = () => {
   const { isDesktop } = useBreakpoint();
+  const { isToShow, error } = useIfShowResume();
+  console.log(isToShow, error)
 
   const sheet = useBuilderStore((state) => state.sheet);
 
@@ -42,6 +42,7 @@ export const BuilderLayout = () => {
   if (isDesktop) {
     return (
       <div className="relative h-full w-full overflow-hidden">
+        {isToShow && !isToShow.success && <UpgradePopup reason={isToShow?.errorText || "Error"}  />}
         <PanelGroup direction="horizontal">
           <Panel
             minSizePixels={48}
@@ -79,6 +80,7 @@ export const BuilderLayout = () => {
 
   return (
     <div className="relative">
+      {isToShow && !isToShow.success && <UpgradePopup reason={isToShow?.errorText || "Error"} />}
       <Sheet open={sheet.left.open} onOpenChange={sheet.left.setOpen}>
         <SheetContent
           side="left"

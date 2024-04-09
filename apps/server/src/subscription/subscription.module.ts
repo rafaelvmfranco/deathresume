@@ -4,11 +4,12 @@ import { SubscriptionService } from "./subscription.service";
 import { FirebaseModule } from "../firebase/firebase.module";
 import { PlanModule } from "../plan/plan.module";
 import { SubscriptionController } from "./subscription.controller";
+import { UsageModule } from "../usage/usage.module";
 
 @Module({
-  imports: [FirebaseModule, PlanModule],
+  imports: [FirebaseModule, PlanModule, UsageModule],
   controllers: [SubscriptionController],
-  providers: [SubscriptionService],
+  providers: [SubscriptionService, UsageModule],
   exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

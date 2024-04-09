@@ -22,7 +22,7 @@ export const PlansPage = () => {
         </title>
       </Helmet>
 
-      <div className="fixed top-0 h-screen w-screen py-12 px-24 bg-violet text-white dark:bg-black">
+      <div className="min-h-screen w-screen py-12 px-24 bg-violet text-white dark:bg-black">
         <div className="">
           <Link to="/dashboard">
             <button className="text-xl text-white">{"\u003C"} &nbsp; Back</button>
