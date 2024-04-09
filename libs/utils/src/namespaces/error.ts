@@ -17,5 +17,7 @@ export enum ErrorMessage {
   ResumePrinterError = "ResumePrinterError",
   ResumePreviewError = "ResumePreviewError",
   SomethingWentWrong = "SomethingWentWrong",
-  UserNotFound = "UserNotFound"
+  UserNotFound = "UserNotFound",
+  UsageLimitExceeded = "You have reached the limit of ",
+  PaymentPeriodEnded = "Payment period is ended"
 }
