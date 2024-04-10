@@ -26,8 +26,7 @@ const OutletSlot = () => (
 
 export const BuilderLayout = () => {
   const { isDesktop } = useBreakpoint();
-  const { isToShow, error } = useIfShowResume();
-  console.log(isToShow, error)
+  const { isToShow } = useIfShowResume();
 
   const sheet = useBuilderStore((state) => state.sheet);
 
