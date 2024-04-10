@@ -8,11 +8,12 @@ import { ResumeController } from "./resume.controller";
 import { ResumeService } from "./resume.service";
 import { FirebaseResumeService } from "./firebase-resume.service";
 import { UsageModule } from "../usage/usage.module";
+import { UsageService } from "../usage/usage.service";
 
 @Module({
   imports: [AuthModule, PrinterModule, FirebaseModule, UsageModule],
   controllers: [ResumeController],
-  providers: [ResumeService, FirebaseResumeService],
+  providers: [ResumeService, FirebaseResumeService, UsageService],
   exports: [ResumeService],
 })
 export class ResumeModule {}
