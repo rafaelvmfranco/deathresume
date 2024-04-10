@@ -14,7 +14,7 @@ export class ResumeGuard implements CanActivate {
     const user = request.user as UserWithSecrets | false;
 
     try {
-      const resume = await this.resumeService.findOne(
+      let resume: any = await this.resumeService.findOne(
         request.params.id,
         user ? user.id : undefined,
       );

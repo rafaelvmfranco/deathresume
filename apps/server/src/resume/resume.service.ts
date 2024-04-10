@@ -1,111 +1,161 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
-import { CreateResumeDto, ImportResumeDto, ResumeDto, UpdateResumeDto } from "@reactive-resume/dto";
-import { defaultResumeData, ResumeData } from "@reactive-resume/schema";
+import {
+  CreateResumeDto,
+  ImportResumeDto,
+  ResumeDto,
+  UpdateResumeDto,
+  ResumeWithStrigifiedLayout,
+} from "@reactive-resume/dto";
+import {
+  defaultResumeData,
+  ResumeData,
+  ResumeDataWithStringifiedLayout,
+} from "@reactive-resume/schema";
 import type { DeepPartial } from "@reactive-resume/utils";
 import { generateRandomName, kebabCase } from "@reactive-resume/utils";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { RedisService } from "@songkeys/nestjs-redis";
 import deepmerge from "deepmerge";
 import Redis from "ioredis";
-import { PrismaService } from "nestjs-prisma";
 
 import { PrinterService } from "@/server/printer/printer.service";
 
 import { FirebaseService } from "../firebase/firebase.service";
 import { UtilsService } from "../utils/utils.service";
+import { UsageService } from "../usage/usage.service";
 
 @Injectable()
 export class ResumeService {
   private readonly redis: Redis;
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly printerService: PrinterService,
     private readonly firebaseService: FirebaseService,
     private readonly redisService: RedisService,
     private readonly utils: UtilsService,
+    private readonly usageService: UsageService,
   ) {
     this.redis = this.redisService.getClient();
   }
 
   async create(userId: string, createResumeDto: CreateResumeDto) {
-    const { name, email, picture } = await this.prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { name: true, email: true, picture: true },
-    });
+    const { name, email, picture } = await this.firebaseService.findUniqueByIdOrThrow(
+      "userCollection",
+      { id: userId },
+      { select: ["name", "email", "picture"] },
+    );
 
     const data = deepmerge(defaultResumeData, {
       basics: { name, email, picture: { url: picture ?? "" } },
     } satisfies DeepPartial<ResumeData>);
 
-    const resume = await this.prisma.resume.create({
-      data: {
-        data,
+    const resumeDto = this.stringifyResumeLayout(data);
+
+    const resume = (await this.firebaseService.create("resumeCollection", {
+      dto: {
+        data: resumeDto,
         userId,
         title: createResumeDto.title,
         visibility: createResumeDto.visibility,
         slug: createResumeDto.slug ?? kebabCase(createResumeDto.title),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
-    });
+    })) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
       this.redis.set(`user:${userId}:resume:${resume.id}`, JSON.stringify(resume)),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "resumes",
+      }),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async import(userId: string, importResumeDto: ImportResumeDto) {
     const randomTitle = generateRandomName();
 
-    const resume = await this.prisma.resume.create({
-      data: {
+    const resumeData = this.stringifyResumeLayout(importResumeDto.data);
+
+    const resume = (await this.firebaseService.create("resumeCollection", {
+      dto: {
         userId,
         visibility: "private",
-        data: importResumeDto.data,
+        data: resumeData,
         title: importResumeDto.title || randomTitle,
         slug: importResumeDto.slug || kebabCase(randomTitle),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
-    });
+    })) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.del(`user:${userId}:resumes`),
       this.redis.set(`user:${userId}:resume:${resume.id}`, JSON.stringify(resume)),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "resumes",
+      }),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   findAll(userId: string) {
-    return this.utils.getCachedOrSet(`user:${userId}:resumes`, () =>
-      this.prisma.resume.findMany({
-        where: { userId },
-        orderBy: { updatedAt: "desc" },
-      }),
-    );
+    return this.utils.getCachedOrSet(`user:${userId}:resumes`, async () => {
+      const resumes = await this.firebaseService.findMany(
+        "resumeCollection",
+        { condition: { field: "userId", value: userId } },
+        { order: { field: "updatedAt", by: "desc" } },
+      );
+
+      return resumes.map((resume: ResumeWithStrigifiedLayout) => this.parseResumeLayout(resume));
+    });
   }
 
-  findOne(id: string, userId?: string) {
+  async findOne(id: string, userId?: string) {
     if (userId) {
-      return this.utils.getCachedOrSet(`user:${userId}:resume:${id}`, () =>
-        this.prisma.resume.findUniqueOrThrow({
-          where: { userId_id: { userId, id } },
-        }),
-      );
+      return this.utils.getCachedOrSet(`user:${userId}:resume:${id}`, async () => {
+        const resume = (await this.firebaseService.findUniqueOrThrow(
+          "resumeCollection",
+          {
+            condition: { field: "userId", value: userId },
+          },
+          { select: [] },
+          { id },
+        )) as ResumeWithStrigifiedLayout;
+
+        await this.usageService.changeFieldByNumberBy1(userId || "", {
+          action: "increment",
+          field: "views",
+        });
+
+        Logger.log(" this.parseResumeLayout(resume)", this.parseResumeLayout(resume));
+
+        return this.parseResumeLayout(resume);
+      });
     }
 
-    return this.utils.getCachedOrSet(`user:public:resume:${id}`, () =>
-      this.prisma.resume.findUniqueOrThrow({
-        where: { id },
-      }),
-    );
+    return this.utils.getCachedOrSet(`user:public:resume:${id}`, async () => {
+      const resume = (await this.firebaseService.findUniqueByIdOrThrow("resumeCollection", {
+        id,
+      })) as ResumeWithStrigifiedLayout;
+
+      await this.usageService.changeFieldByNumberBy1(userId || "", {
+        action: "increment",
+        field: "views",
+      });
+
+      Logger.log(" this.parseResumeLayout(resume)", this.parseResumeLayout(resume));
+      return this.parseResumeLayout(resume);
+    });
   }
 
   async findOneStatistics(userId: string, id: string) {
@@ -119,64 +169,106 @@ export class ResumeService {
     return { views, downloads };
   }
 
-  async findOneByUsernameSlug(username: string, slug: string, userId?: string) {
-    const resume = await this.prisma.resume.findFirstOrThrow({
-      where: { user: { username }, slug, visibility: "public" },
+  async findOneByUsernameSlug(username: string, slug: string, userId: string = "") {
+    const user = await this.firebaseService.findUniqueOrThrow("userCollection", {
+      condition: { field: username, value: username },
     });
 
+    const resume = (await this.firebaseService.findFirstOrThrow("resumeCollection", {
+      conditions: [
+        {
+          field: "userId",
+          value: user.id,
+        },
+        {
+          field: "slug",
+          value: slug,
+        },
+        {
+          field: "visibility",
+          value: "public",
+        },
+      ],
+    })) as ResumeWithStrigifiedLayout;
+
     // Update statistics: increment the number of views by 1
+    await this.usageService.changeFieldByNumberBy1(userId, {
+      action: "increment",
+      field: "views",
+    });
+
     if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:views`);
 
-    return resume;
+    return this.parseResumeLayout(resume);
   }
 
   async update(userId: string, id: string, updateResumeDto: UpdateResumeDto) {
-    try {
-      const { locked } = await this.prisma.resume.findUniqueOrThrow({
-        where: { id },
-        select: { locked: true },
-      });
+    const { locked } = await this.firebaseService.findUniqueOrThrow(
+      "resumeCollection",
+      {
+        condition: {
+          field: "userId",
+          value: userId,
+        },
+      },
+      { select: ["locked"] },
+      { id },
+    );
 
-      if (locked) throw new BadRequestException(ErrorMessage.ResumeLocked);
+    if (locked) throw new BadRequestException(ErrorMessage.ResumeLocked);
 
-      const resume = await this.prisma.resume.update({
-        data: {
+    const resume = (await this.firebaseService.updateItem(
+      "resumeCollection",
+      {
+        condition: {
+          field: "userId",
+          value: userId,
+        },
+      },
+      {
+        dto: {
           title: updateResumeDto.title,
           slug: updateResumeDto.slug,
           visibility: updateResumeDto.visibility,
-          data: updateResumeDto.data as unknown as Prisma.JsonObject,
+          data: this.stringifyResumeLayout((updateResumeDto as any).data),
+          updatedAt: new Date().toISOString(),
         },
-        where: { userId_id: { userId, id } },
-      });
-
-      await Promise.all([
-        this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
-        this.redis.del(`user:${userId}:resumes`),
-        this.redis.del(`user:${userId}:storage:resumes:${id}`),
-        this.redis.del(`user:${userId}:storage:previews:${id}`),
-      ]);
-
-      return resume;
-    } catch (error) {
-      if (error.code === "P2025") {
-        Logger.error(error);
-        throw new InternalServerErrorException(error);
-      }
-    }
-  }
-
-  async lock(userId: string, id: string, set: boolean) {
-    const resume = await this.prisma.resume.update({
-      data: { locked: set },
-      where: { userId_id: { userId, id } },
-    });
+      },
+      { id },
+    )) as ResumeWithStrigifiedLayout;
 
     await Promise.all([
       this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
       this.redis.del(`user:${userId}:resumes`),
     ]);
 
-    return resume;
+    return this.parseResumeLayout(resume);
+  }
+
+  async lock(userId: string, id: string, set: boolean) {
+    const resume = (await this.firebaseService.updateItem(
+      "resumeCollection",
+      {
+        condition: {
+          field: "userId",
+          value: userId,
+        },
+      },
+      {
+        dto: {
+          locked: set,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+      { id },
+    )) as ResumeWithStrigifiedLayout;
+
+    await Promise.all([
+      this.redis.set(`user:${userId}:resume:${id}`, JSON.stringify(resume)),
+      this.redis.del(`user:${userId}:resumes`),
+    ]);
+
+    return this.parseResumeLayout(resume);
   }
 
   async remove(userId: string, id: string) {
@@ -188,21 +280,58 @@ export class ResumeService {
       // Remove files in bucket, and their cached keys
       this.firebaseService.deleteObject(userId, "resumes", id),
       this.firebaseService.deleteObject(userId, "previews", id),
+
+      this.usageService.deleteByUserId(userId),
+      this.usageService.changeFieldByNumberBy1(userId, {
+        action: "decrement",
+        field: "resumes",
+      }),
     ]);
 
-    return this.prisma.resume.delete({ where: { userId_id: { userId, id } } });
+    const response = await this.firebaseService.deleteByDocId("resumeCollection", id);
+    return this.parseResumeLayout(response);
   }
 
-  async printResume(resume: ResumeDto, userId?: string) {
-    const url = await this.printerService.printResume(resume);
+  async printResume(resume: ResumeWithStrigifiedLayout, userId: string = "") {
+    const parsedResume = this.parseResumeLayout(resume);
+    const url = await this.printerService.printResume(parsedResume);
 
     // Update statistics: increment the number of downloads by 1
-    if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:downloads`);
+    this.usageService.changeFieldByNumberBy1(userId, {
+      action: "increment",
+      field: "downloads",
+    });
 
     return url;
   }
 
-  printPreview(resume: ResumeDto) {
-    return this.printerService.printPreview(resume);
+  async printPreview(resume: ResumeWithStrigifiedLayout) {
+    console.log("preview", resume?.data.metadata.layout);
+    const parsedResume = this.parseResumeLayout(resume);
+
+    return await this.printerService.printPreview(parsedResume);
+  }
+
+  parseResumeLayout(resume: ResumeWithStrigifiedLayout): ResumeDto {
+    return {
+      ...resume,
+      data: {
+        ...resume.data,
+        metadata: {
+          ...resume.data.metadata,
+          layout: JSON.parse(resume.data.metadata.layout),
+        },
+      },
+    };
+  }
+
+  stringifyResumeLayout(resumeData: ResumeData): ResumeDataWithStringifiedLayout {
+    return {
+      ...resumeData,
+      metadata: {
+        ...resumeData.metadata,
+        layout: JSON.stringify(resumeData.metadata.layout),
+      },
+    };
   }
 }

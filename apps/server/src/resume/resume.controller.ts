@@ -14,7 +14,7 @@ import {
 import { ApiTags } from "@nestjs/swagger";
 import { User as UserEntity } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { CreateResumeDto, ImportResumeDto, ResumeDto, UpdateResumeDto } from "@reactive-resume/dto";
+import { CreateResumeDto, ImportResumeDto, ResumeDto, ResumeWithStrigifiedLayout, UpdateResumeDto } from "@reactive-resume/dto";
 import { resumeDataSchema } from "@reactive-resume/schema";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -83,8 +83,8 @@ export class ResumeController {
 
   @Get(":id")
   @UseGuards(TwoFactorGuard, ResumeGuard)
-  findOne(@Resume() resume: ResumeDto) {
-    return resume;
+  findOne(@Resume() resume: ResumeWithStrigifiedLayout) {
+    return this.resumeService.parseResumeLayout(resume);
   }
 
   @Get(":id/statistics")
@@ -127,7 +127,7 @@ export class ResumeController {
 
   @Get("/print/:id")
   @UseGuards(OptionalGuard, ResumeGuard)
-  async printResume(@User("id") userId: string | undefined, @Resume() resume: ResumeDto) {
+  async printResume(@User("id") userId: string | undefined, @Resume() resume: ResumeWithStrigifiedLayout) {
     try {
       const url = await this.resumeService.printResume(resume, userId);
 
@@ -140,7 +140,7 @@ export class ResumeController {
 
   @Get("/print/:id/preview")
   @UseGuards(TwoFactorGuard, ResumeGuard)
-  async printPreview(@Resume() resume: ResumeDto) {
+  async printPreview(@Resume() resume: ResumeWithStrigifiedLayout) {
     try {
       const url = await this.resumeService.printPreview(resume);
 
