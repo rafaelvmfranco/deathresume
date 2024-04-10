@@ -65,6 +65,8 @@ export class FirebaseService {
     private readonly configService: ConfigService<Config>,
   ) {
     this.db = admin.firestore();
+    this.db.settings({ ignoreUndefinedProperties: true })
+
     this.userCollection = this.db.collection("users");
     this.planCollection = this.db.collection("plans");
     this.resumeCollection = this.db.collection("resumes");
