@@ -3,7 +3,6 @@ import { ApiTags } from "@nestjs/swagger";
 import { User as UserEntity } from "@prisma/client";
 import { UpdateUsageDto } from "@reactive-resume/dto";
 import { User } from "@/server/user/decorators/user.decorator";
-import { OptionalGuard } from "../auth/guards/optional.guard";
 import { TwoFactorGuard } from "../auth/guards/two-factor.guard";
 import { UsageService } from "./usage.service";
 

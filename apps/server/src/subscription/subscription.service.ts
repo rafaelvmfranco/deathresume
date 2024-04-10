@@ -18,7 +18,7 @@ export class SubscriptionService {
     const subscription = (await this.firebaseService.findUnique("subscriptionCollection", {
       condition: {
         field: "userId",
-        value: "wfup4t24ifg6m2oca2p9lx22",
+        value: userId,
       },
     })) as SubscriptionDto;
 

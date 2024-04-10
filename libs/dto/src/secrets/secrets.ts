@@ -4,8 +4,8 @@ import { z } from "nestjs-zod/z";
 
 export const secretsSchema = z.object({
   id: idSchema,
-  password: z.string().nullable(),
-  lastSignedIn: z.date().nullable(),
+  password: z.string().nullable().default(null),
+  lastSignedIn: z.date().or(z.dateString()),
   verificationToken: z.string().nullable(),
   twoFactorSecret: z.string().nullable(),
   twoFactorBackupCodes: z.array(z.string()).default([]),

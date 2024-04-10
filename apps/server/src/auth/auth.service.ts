@@ -17,7 +17,6 @@ import { authenticator } from "otplib";
 import { Config } from "../config/schema";
 import { MailService } from "../mail/mail.service";
 import { UserService } from "../user/user.service";
-import { FirebaseUserService } from "@/server/user/firebase-user.service";
 import { UtilsService } from "../utils/utils.service";
 import { Payload } from "./utils/payload";
 
@@ -26,7 +25,6 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService<Config>,
     private readonly userService: UserService,
-    private readonly firebaseUserService: FirebaseUserService,
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly utils: UtilsService,
@@ -108,16 +106,6 @@ export class AuthService {
         emailVerified: false, // Set to true if you don't want to verify user's email
         secrets: { create: { password: hashedPassword } },
       });
-
-      // await this.firebaseUserService.create({
-      //   name: registerDto.name,
-      //   email: registerDto.email,
-      //   username: registerDto.username,
-      //   locale: registerDto.locale,
-      //   provider: "email",
-      //   emailVerified: false, // Set to true if you don't want to verify user's email
-      //   secrets: { create: { password: hashedPassword } },
-      // });
 
       Logger.log(`User created`, "auth service");
 

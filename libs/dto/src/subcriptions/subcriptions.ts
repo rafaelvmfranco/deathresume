@@ -24,7 +24,7 @@ export const subscriptionSchema = z.object({
   startPaymentAt: z.union([z.null(), z.number()]),
   lastPaymentAt: z.union([z.null(), z.number()]),
   activeUntil: z.number().refine((value) => value === Infinity || Number.isFinite(value)),
-  createdAt: z.number(),
+  createdAt: z.date().or(z.dateString()),
 });
 
 export class SubscriptionDto extends createZodDto(subscriptionSchema) {}

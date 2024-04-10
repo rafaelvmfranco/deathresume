@@ -1,12 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException, Logger } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { User } from "@prisma/client";
 import { processUsername } from "@reactive-resume/utils";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { Profile, Strategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
 
-import { UserService } from "@/server/user/user.service";
-import { FirebaseUserService } from "@/server/user/firebase-user.service";
+import { UserService } from "../../user/user.service";
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
@@ -15,7 +13,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
     readonly clientSecret: string,
     readonly callbackURL: string,
     private readonly userService: UserService,
-    private readonly firebaseUserService: FirebaseUserService
   ) {
     super({ clientID, clientSecret, callbackURL, scope: ["email", "profile"] } as StrategyOptions);
   }
@@ -31,7 +28,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
     const email = emails?.[0].value ?? `${username}@google.com`;
     const picture = photos?.[0].value;
 
-    let user: User | null = null;
+    let user: any | null = null;
 
     if (!email) throw new BadRequestException();
 
@@ -53,16 +50,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
           username: processUsername(username ?? email.split("@")[0]),
           secrets: { create: {} },
         });
-        await this.firebaseUserService.create({
-          email,
-          picture: picture ?? null,
-          locale: "en-US",
-          name: displayName,
-          provider: "google",
-          emailVerified: true, // auto-verify emails
-          username: processUsername(username ?? email.split("@")[0]),
-          secrets: { create: {}},
-        });
+        
         done(null, user);
       } catch (error) {
         throw new BadRequestException(ErrorMessage.UserAlreadyExists);

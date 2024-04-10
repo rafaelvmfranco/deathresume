@@ -6,6 +6,7 @@ import { ErrorMessage } from "@reactive-resume/utils";
 import { Profile, Strategy, StrategyOptions } from "passport-github2";
 
 import { UserService } from "@/server/user/user.service";
+import { UserDto } from "@reactive-resume/dto";
 
 @Injectable()
 export class GitHubStrategy extends PassportStrategy(Strategy, "github") {
@@ -50,9 +51,10 @@ export class GitHubStrategy extends PassportStrategy(Strategy, "github") {
           emailVerified: true, // auto-verify emails
           username: processUsername(username ?? email.split("@")[0]),
           secrets: { create: {} },
-        });
+          createdAt: new Date().toISOString()
+        }) as any;
 
-        done(null, user);
+        done(null, user as UserDto);
       } catch (error) {
         throw new BadRequestException(ErrorMessage.UserAlreadyExists);
       }
