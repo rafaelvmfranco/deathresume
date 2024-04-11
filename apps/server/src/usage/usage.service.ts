@@ -47,7 +47,7 @@ export class UsageService {
   }
 
   async addAlWords(userId: string, alWordsAmount: number) {
-    return await this.firebaseService.updateItem(
+    return await this.firebaseService.changeFieldByNumber(
       "usageCollection",
       {
         condition: {
@@ -61,6 +61,7 @@ export class UsageService {
           value: alWordsAmount,
         },
       },
+      "increment",
     );
   }
 

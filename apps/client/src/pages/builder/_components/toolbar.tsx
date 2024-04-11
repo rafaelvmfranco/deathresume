@@ -17,8 +17,10 @@ import { motion } from "framer-motion";
 
 import { useToast } from "@/client/hooks/use-toast";
 import { usePrintResume } from "@/client/services/resume";
+import { downloadPdf } from "@/client/services/print/index";
 import { useBuilderStore } from "@/client/stores/builder";
 import { useResumeStore, useTemporalResumeStore } from "@/client/stores/resume";
+import { checkIfDownload } from "@/client/services/resume/ifToShow";
 
 export const BuilderToolbar = () => {
   const { toast } = useToast();
@@ -33,34 +35,16 @@ export const BuilderToolbar = () => {
 
   const { printResume, loading } = usePrintResume();
 
-  const downloadPdf = async (url: string, id: string) => {
-    fetch(url).then((response) => {
-      response
-        .blob()
-        .then((blob) => {
-          const fileURL = window.URL.createObjectURL(blob);
-
-          let alink = document.createElement("a");
-          alink.href = fileURL;
-          alink.download = `${id}.pdf`;
-          alink.click();
-        })
-        .catch((error) => {
-          console.log("error", error);
-        });
-    });
-  };
-
   const onPrint = async () => {
+    
+    const allowDownload = await checkIfDownload();
+    if (!allowDownload) return;
+
     const { url } = await printResume({ id });
 
     await downloadPdf(url, id);
   };
 
-  const openInNewTab = (url: string) => {
-    const win = window.open(url, "_blank");
-    if (win) win.focus();
-  };
   const onCopy = async () => {
     const { url } = await printResume({ id });
     await navigator.clipboard.writeText(url);

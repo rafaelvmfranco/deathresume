@@ -62,7 +62,7 @@ export class SubscriptionService {
     return Boolean(subscription.activeUntil > new Date().getTime());
   }
 
-  async isPlanedIsNotExceeded(userId: string) {
+  async findRealUsage(userId: string) {
     const usage = await this.usageService.findOneByUserId(userId);
     const subscription = await this.getByUserId(userId);
 
@@ -70,42 +70,52 @@ export class SubscriptionService {
 
     const plan = subscription.plan[period].max;
 
-    let usageErrorText = "";
+    const successAndErrors: Record<string, any> = {
+      views: { success: true },
+      resumes: { success: true },
+      alWords: { success: true },
+      downloads: { success: true },
+    };
 
-    if (!plan || !usage) return false;
+    if ((plan as any)?.views <= usage.views) {
+      successAndErrors["views"] = {
+        success: false,
+        errorText: ErrorMessage.UsageLimitExceeded + "views",
+      };
+    }
+    if ((plan as any)?.resumes <= usage.resumes) {
+      successAndErrors["resumes"] = {
+        success: false,
+        errorText: ErrorMessage.UsageLimitExceeded + "resumes",
+      };
+    }
+    if ((plan as any)?.alWords <= usage.alWords) {
+      successAndErrors["alWords"] = {
+        success: false,
+        errorText: ErrorMessage.UsageLimitExceeded + "Al Words",
+      };
+    }
+    if ((plan as any)?.downloads <= usage.downloads) {
+      successAndErrors["downloads"] = {
+        success: false,
+        errorText: ErrorMessage.UsageLimitExceeded + "downloads",
+      };
+    }
 
-    if ((plan as any)?.views < usage.views) {
-      usageErrorText += "views ";
-    }
-    if ((plan as any)?.resumes < usage.resumes) {
-      usageErrorText += "resumes ";
-    }
-    if ((plan as any)?.alWords < usage.alWords) {
-      usageErrorText += "Al Words ";
-    }
-    if ((plan as any)?.downloads < usage.downloads) {
-      usageErrorText += "downloads";
-    }
-
-    if (usageErrorText.length > 0) {
-      throw new Error(ErrorMessage.UsageLimitExceeded + usageErrorText);
-    }
-
-    return true;
+    return successAndErrors;
   }
 
   async ifShowResume(userId: string) {
+    const planUsage = await this.findRealUsage(userId);
     const isPaid = await this.isSubscriptionPaid(userId);
 
-    let errorText = isPaid ? "" : ErrorMessage.PaymentPeriodEnded + ". ";
-
-    try {
-      await this.isPlanedIsNotExceeded(userId);
-    } catch (error) {
-      errorText += error + ". ";
-    }
-
-    return errorText.length > 0 ?  { success: false, errorText } : { success: true } ;
+    return {
+      ...planUsage,
+      payment: {
+        success: isPaid,
+        errorText: isPaid ? "" : ErrorMessage.PaymentPeriodEnded,
+      },
+    };
   }
 
   async successPayment(userId: string, planId: string, period: string, payment: any) {}

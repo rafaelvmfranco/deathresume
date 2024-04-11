@@ -23,6 +23,8 @@ import { changeTone } from "../services/openai/change-tone";
 import { fixGrammar } from "../services/openai/fix-grammar";
 import { improveWriting } from "../services/openai/improve-writing";
 import { useOpenAiStore } from "../stores/openai";
+import { registerAlWords } from "../services/usage/register-words";
+import { checkIfUseAlWords } from "../services/resume/ifToShow";
 
 type Action = "improve" | "fix" | "tone";
 type Mood = "casual" | "professional" | "confident" | "friendly";
@@ -43,11 +45,17 @@ export const AiActions = ({ value, onChange, className }: Props) => {
     try {
       setLoading(action);
 
+      const ifUseAlWords = await checkIfUseAlWords();
+      if (!ifUseAlWords) return;
+
       let result = value;
 
       if (action === "improve") result = await improveWriting(value);
       if (action === "fix") result = await fixGrammar(value);
       if (action === "tone" && mood) result = await changeTone(value, mood);
+
+      const alWordsNumber = result.split(" ").length;
+      await registerAlWords(alWordsNumber);
 
       onChange(result);
     } catch (error) {

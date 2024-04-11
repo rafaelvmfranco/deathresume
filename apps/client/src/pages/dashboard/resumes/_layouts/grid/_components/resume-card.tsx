@@ -25,6 +25,7 @@ import { useResumePreview } from "@/client/services/resume/preview";
 import { useDialog } from "@/client/stores/dialog";
 
 import { BaseCard } from "./base-card";
+import { registerView } from "@/client/services/usage/register-view";
 
 type Props = {
   resume: ResumeDto;
@@ -39,7 +40,8 @@ export const ResumeCard = ({ resume }: Props) => {
 
   const lastUpdated = dayjs().to(resume.updatedAt);
 
-  const onOpen = () => {
+  const onOpen = async() => {
+    await registerView();
     navigate(`/builder/${resume.id}`);
   };
 

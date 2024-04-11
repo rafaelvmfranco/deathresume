@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
@@ -127,9 +128,9 @@ export class ResumeController {
 
   @Get("/print/:id")
   @UseGuards(OptionalGuard, ResumeGuard)
-  async printResume(@User("id") userId: string | undefined, @Resume() resume: ResumeWithStrigifiedLayout) {
+  async printResume(@User("id") userId: string | undefined, @Resume() resume: ResumeWithStrigifiedLayout, @Query("isPublic") isPublic: boolean) {
     try {
-      const url = await this.resumeService.printResume(resume, userId);
+      const url = await this.resumeService.printResume(resume, userId, isPublic);
 
       return { url };
     } catch (error) {

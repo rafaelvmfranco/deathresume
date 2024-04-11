@@ -41,6 +41,7 @@ import { z } from "zod";
 import { useCreateResume, useDeleteResume, useUpdateResume } from "@/client/services/resume";
 import { useImportResume } from "@/client/services/resume/import";
 import { useDialog } from "@/client/stores/dialog";
+import { checkIfCreateOrDuplicate } from "@/client/services/resume/ifToShow";
 
 const formSchema = createResumeSchema.extend({ id: idSchema.optional() });
 
@@ -54,9 +55,11 @@ export const ResumeDialog = () => {
   const isDelete = mode === "delete";
   const isDuplicate = mode === "duplicate";
 
+  // create fun
   const { createResume, loading: createLoading } = useCreateResume();
   const { updateResume, loading: updateLoading } = useUpdateResume();
   const { deleteResume, loading: deleteLoading } = useDeleteResume();
+  // duplicate fun
   const { importResume: duplicateResume, loading: duplicateLoading } = useImportResume();
 
   const loading = createLoading || updateLoading || deleteLoading || duplicateLoading;
@@ -77,6 +80,14 @@ export const ResumeDialog = () => {
 
   const onSubmit = async (values: FormValues) => {
     if (isCreate) {
+      const ifShow = await checkIfCreateOrDuplicate();
+      console.log("ifShow", ifShow);
+
+      if (!ifShow) {
+        close();
+        return;
+      }
+
       await createResume({ slug: values.slug, title: values.title, visibility: "private" });
     }
 
@@ -92,6 +103,12 @@ export const ResumeDialog = () => {
 
     if (isDuplicate) {
       if (!payload.item?.id) return;
+
+      const ifShow = await checkIfCreateOrDuplicate();
+      if (!ifShow) {
+        close();
+        return;
+      }
 
       await duplicateResume({
         title: values.title,
@@ -129,6 +146,12 @@ export const ResumeDialog = () => {
     const randomName = generateRandomName();
     const { title, slug } = form.getValues();
 
+    const ifShow = await checkIfCreateOrDuplicate();
+    if (!ifShow) {
+      close();
+      return;
+    }
+
     await duplicateResume({
       title: title || randomName,
       slug: slug || kebabCase(randomName),
@@ -153,7 +176,11 @@ export const ResumeDialog = () => {
 
               <AlertDialogFooter>
                 <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
-                <AlertDialogAction variant="error" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
+                <AlertDialogAction
+                  variant="error"
+                  disabled={loading}
+                  onClick={form.handleSubmit(onSubmit)}
+                >
                   {t`Delete`}
                 </AlertDialogAction>
               </AlertDialogFooter>

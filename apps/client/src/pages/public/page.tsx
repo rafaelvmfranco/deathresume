@@ -11,6 +11,7 @@ import { Icon } from "@/client/components/icon";
 import { ThemeSwitch } from "@/client/components/theme-switch";
 import { queryClient } from "@/client/libs/query-client";
 import { findResumeByUsernameSlug, usePrintResume } from "@/client/services/resume";
+import { downloadPdf } from "@/client/services/print";
 
 export const PublicResumePage = () => {
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -54,14 +55,10 @@ export const PublicResumePage = () => {
   }, [frameRef]);
 
   const onDownloadPdf = async () => {
-    const { url } = await printResume({ id });
+    const { url } = await printResume({ id, isPublic: true });
 
-    const openInNewTab = (url: string) => {
-      const win = window.open(url, "_blank");
-      if (win) win.focus();
-    };
+    await downloadPdf(url, id);
 
-    openInNewTab(url);
   };
 
   return (

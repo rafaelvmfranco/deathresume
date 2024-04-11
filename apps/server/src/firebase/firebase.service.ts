@@ -65,7 +65,7 @@ export class FirebaseService {
     private readonly configService: ConfigService<Config>,
   ) {
     this.db = admin.firestore();
-    this.db.settings({ ignoreUndefinedProperties: true })
+    this.db.settings({ ignoreUndefinedProperties: true });
 
     this.userCollection = this.db.collection("users");
     this.planCollection = this.db.collection("plans");
@@ -96,7 +96,6 @@ export class FirebaseService {
     { select }: Select = { select: [] },
     docId?: { id: string },
   ) {
-    console.log("docId", docId)
     const query = await this[collection as keyof FirebaseService].where(
       condition.field,
       "==",
@@ -157,11 +156,18 @@ export class FirebaseService {
     const querySnapshot = await query.get();
 
     return querySnapshot.docs.map(
-      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => doc.data(),
+      (doc: firestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+        const docData = doc.data();
+        return { id: doc.id, ...docData };
+      },
     )[0];
   }
 
-  async findMany(collection: CollectionName, condition?: SearchCondition | null, order?: OrderBy | null) {
+  async findMany(
+    collection: CollectionName,
+    condition?: SearchCondition | null,
+    order?: OrderBy | null,
+  ) {
     let query: firestore.Query = this[collection as keyof FirebaseService];
 
     if (condition && order) {

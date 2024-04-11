@@ -171,7 +171,7 @@ export class ResumeService {
 
   async findOneByUsernameSlug(username: string, slug: string, userId: string = "") {
     const user = await this.firebaseService.findUniqueOrThrow("userCollection", {
-      condition: { field: username, value: username },
+      condition: { field: "username", value: username },
     });
 
     const resume = (await this.firebaseService.findFirstOrThrow("resumeCollection", {
@@ -190,12 +190,6 @@ export class ResumeService {
         },
       ],
     })) as ResumeWithStrigifiedLayout;
-
-    // Update statistics: increment the number of views by 1
-    await this.usageService.changeFieldByNumberBy1(userId, {
-      action: "increment",
-      field: "views",
-    });
 
     if (!userId) await this.redis.incr(`user:${resume.userId}:resume:${resume.id}:views`);
 
@@ -292,15 +286,15 @@ export class ResumeService {
     return this.parseResumeLayout(response);
   }
 
-  async printResume(resume: ResumeWithStrigifiedLayout, userId: string = "") {
+  async printResume(resume: ResumeWithStrigifiedLayout, userId: string = "", isPublic: boolean) {
     const parsedResume = this.parseResumeLayout(resume);
     const url = await this.printerService.printResume(parsedResume);
 
-    // Update statistics: increment the number of downloads by 1
-    this.usageService.changeFieldByNumberBy1(userId, {
-      action: "increment",
-      field: "downloads",
-    });
+    if (!isPublic)
+      await this.usageService.changeFieldByNumberBy1(userId, {
+        action: "increment",
+        field: "downloads",
+      });
 
     return url;
   }

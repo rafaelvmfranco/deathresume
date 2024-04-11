@@ -5,31 +5,38 @@ import { cn } from "@reactive-resume/utils";
 import { saveAs } from "file-saver";
 
 import { usePrintResume } from "@/client/services/resume/print";
+import { downloadPdf } from "@/client/services/print";
+import { registerJsonDownload } from "@/client/services/usage/register-download";
 import { useResumeStore } from "@/client/stores/resume";
 
 import { getSectionIcon } from "../shared/section-icon";
+import { checkIfDownload } from "@/client/services/resume/ifToShow";
 
 export const ExportSection = () => {
   const { printResume, loading } = usePrintResume();
 
-  const onJsonExport = () => {
+
+  const onJsonExport = async () => {
+
+    const allowDownload = await checkIfDownload();
+    if (!allowDownload) return;
+
     const { resume } = useResumeStore.getState();
-    const filename = `reactive_resume-${resume.id}.json`;
+    const filename = `death_resume-${resume.id}.json`;
     const resumeJSON = JSON.stringify(resume.data, null, 2);
 
+    await registerJsonDownload();
     saveAs(new Blob([resumeJSON], { type: "application/json" }), filename);
   };
 
   const onPdfExport = async () => {
+
+    const allowDownload = await checkIfDownload();
+    if (!allowDownload) return;
+
     const { resume } = useResumeStore.getState();
     const { url } = await printResume({ id: resume.id });
-
-    const openInNewTab = (url: string) => {
-      const win = window.open(url, "_blank");
-      if (win) win.focus();
-    };
-
-    openInNewTab(url);
+    await downloadPdf(url, resume.id);
   };
 
   return (
