@@ -153,7 +153,7 @@ export const ResumeDialog = () => {
 
               <AlertDialogFooter>
                 <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
-                <AlertDialogAction variant="error" onClick={form.handleSubmit(onSubmit)}>
+                <AlertDialogAction variant="error" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
                   {t`Delete`}
                 </AlertDialogAction>
               </AlertDialogFooter>
