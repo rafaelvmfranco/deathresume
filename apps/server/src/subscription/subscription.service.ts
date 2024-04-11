@@ -88,7 +88,7 @@ export class SubscriptionService {
     }
 
     if (usageErrorText.length > 0) {
-      throw new NotFoundException(usageErrorText);
+      throw new Error(ErrorMessage.UsageLimitExceeded + usageErrorText);
     }
 
     return true;
