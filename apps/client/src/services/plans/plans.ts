@@ -42,7 +42,7 @@ export const transformPlan = (plan: PlanDto, currentPeriod: "month" | "year") =>
       : `${planByPeriod.max.resumes} ${planByPeriod.max.resumes > 1 ? "resumes" : "resume"}`,
     downloads: !planByPeriod.max.downloads
       ? `Unlimited`
-      : `${planByPeriod.max.downloads} ${planByPeriod.max.downloads > 1 ? "resumes" : "resume"}`,
+      : `${planByPeriod.max.downloads} ${planByPeriod.max.downloads > 1 ? "downloads" : "download"}`,
     views: defineViewText(plan.name, planByPeriod.max.resumes),
     sharing: "Resume sharing link",
     alWords: `${planByPeriod.max.alWords} Al words`,
