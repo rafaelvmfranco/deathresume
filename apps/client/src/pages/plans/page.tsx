@@ -3,17 +3,51 @@ import { Link } from "react-router-dom";
 import { t } from "@lingui/macro";
 import { Helmet } from "react-helmet-async";
 import { PlanDto } from "@reactive-resume/dto";
-import { transformPlan, useGetPlans } from "@/client/services/plans";
+import {
+  transformPlan,
+  useGetPlans,
+  ifStartCheckout,
+  isSubscribedToFreePlan,
+} from "@/client/services/plans";
+import { useGetSubscription } from "@/client/services/subscription";
+import { useUpdateSubscription } from "@/client/services/subscription/update";
+import { useCreateSubscription } from "@/client/services/subscription/create";
 
 export const PlansPage = () => {
   const { plans, error } = useGetPlans();
-
+  const { subscription } = useGetSubscription();
+  const { loading, createSubscription } = useCreateSubscription();
+  const { updateLoading, updateSubscription } = useUpdateSubscription();
+  
   const [billingPeriodCode, setBillingPeriodCode] = useState<number>(0);
   const currentPeriod = !billingPeriodCode ? "month" : "year";
 
   const currentPlans =
-    plans && !error ? plans.map((plan: PlanDto) => transformPlan(plan, currentPeriod)) : [];
+    plans && subscription && !error
+      ? plans.map((plan: PlanDto) => transformPlan(plan, currentPeriod))
+      : [];
 
+  const handleSubscription = async (plan: any) => {
+    if (subscription) {
+      const isStart = ifStartCheckout(plan, currentPeriod, subscription);
+      if (!isStart) return;
+
+      if (isSubscribedToFreePlan(subscription)) {
+        const url = await createSubscription({
+          stripePriceId: plan.stripePriceId,
+          userEmail: "email@gmail.com",
+        });
+        if (url) window.location.href = url;
+        return;
+      }
+
+      await updateSubscription({
+        stripePriceId: plan.stripePriceId,
+        subscriptionId: "sub_1P6X7NBSh4mnnAIl81EMD4av",
+      });
+    }
+  };
+  
   return (
     <>
       <Helmet>
@@ -71,10 +105,14 @@ export const PlansPage = () => {
                 <div className="h-6 inline bg-violet dark:bg-black order-darkGray border-opacity-0 px-1 text-xs rounded">
                   {plan.label}
                 </div>
-                <h3 className="text-2xl font-bold leading-relaxed tracking-tight">{t`${plan.name}`}</h3>
+                <h3 className="text-2xl font-bold leading-relaxed tracking-tight">{t`${plan.title}`}</h3>
                 <p className="text-4xl">{plan.price}</p>
                 <p>
-                  <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
+                  <button
+                    disabled={loading || updateLoading}
+                    onClick={() => handleSubscription(plan)}
+                    className="bg-reddish rounded-md px-4 py-2 text-white text-lg"
+                  >
                     {plan.buttonText}
                   </button>
                 </p>

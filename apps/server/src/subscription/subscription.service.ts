@@ -5,6 +5,7 @@ import { SubscriptionDto, SubscriptionWithPlan, PlanDto } from "@reactive-resume
 import { PlanService } from "../plan/plan.service";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { UsageService } from "../usage/usage.service";
+import { StripeService } from "../stripe/stripe.service";
 
 @Injectable()
 export class SubscriptionService {
@@ -12,6 +13,7 @@ export class SubscriptionService {
     private readonly firebaseService: FirebaseService,
     private readonly planService: PlanService,
     private readonly usageService: UsageService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async getByUserId(userId: string): Promise<SubscriptionWithPlan> {
@@ -39,23 +41,46 @@ export class SubscriptionService {
       dto: {
         planId: freePlanId,
         userId,
-        period: { name: "year", monthlyPayments: 12 },
-        payments: [],
+        period: "year",
+        payment: null,
         startPaymentAt: null,
         lastPaymentAt: null,
-        activeUntil: Infinity,
-        createdAt: new Date().toISOString(),
+        activeUntil: new Date().setFullYear(new Date().getFullYear() + 1),
+        createdAt: Date.now(),
       },
     });
   }
 
+  async create(priceId: string, userEmail: string){
+      const customer = await this.stripeService.createCustomer(userEmail);
+
+      const session = await this.stripeService.createSubscription(priceId, customer.id);
+      Logger.log("session - subs service", JSON.stringify(session));
+      return session.url;
+  }
+
+  async update(priceId: string, subscriptionId: string) {
+    const stripeSubscription = await this.stripeService.updateSubscription(priceId, subscriptionId);
+
+
+    const interval = stripeSubscription.plan.interval;
+    const planId = stripeSubscription.plan.id;
+
+    const plans = (await this.planService.getAll());
+    const plan = (plans as unknown as any[]).find((plan) => plan[interval].stripePriceId === planId);
+  }
   async stopSubscription(userId: string) {
-    // stop payment
+
+    // fix: extract subscription id from subscription
+    const subscriptionId = ""
+    await this.stripeService.cancelSubscription(subscriptionId);
 
     return await this.firebaseService.deleteByField("subscriptionCollection", {
       condition: { field: "userId", value: userId },
     });
   }
+
+  async handleWebhook(eventBody: any) {}
 
   async isSubscriptionPaid(userId: string) {
     const subscription = await this.getByUserId(userId);
@@ -66,7 +91,7 @@ export class SubscriptionService {
     const usage = await this.usageService.findOneByUserId(userId);
     const subscription = await this.getByUserId(userId);
 
-    const period = subscription.period.name;
+    const period = subscription.period;
 
     const plan = subscription.plan[period].max;
 
@@ -117,8 +142,4 @@ export class SubscriptionService {
       },
     };
   }
-
-  async successPayment(userId: string, planId: string, period: string, payment: any) {}
-
-  async failedPayment(userId: string, planId: string, period: string, payment: any) {}
 }

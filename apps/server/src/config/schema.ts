@@ -69,6 +69,13 @@ export const configSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CALLBACK_URL: z.string().url().optional(),
+
+  // Stripe
+  STRIPE_API_KEY: z.string().optional(),
+  CLIENT_STRIPE_CUSTOMER_PORTAL_URL: z.string().url().optional(),
+  STRIPE_CREATE_SUCCESS_URL: z.string().optional(),
+  STRIPE_UPDATE_SUCCESS_URL: z.string().optional(),
+
 });
 
 export type Config = z.infer<typeof configSchema>;
