@@ -356,6 +356,9 @@ dependencies:
   sharp:
     specifier: ^0.33.0
     version: 0.33.0
+  stripe:
+    specifier: ^15.1.0
+    version: 15.1.0
   tailwind-merge:
     specifier: ^2.1.0
     version: 2.1.0
@@ -18639,6 +18642,14 @@ packages:
     resolution: {integrity: sha512-A21Xsm1XzUkK0qK1ZrytDUvqsQWict2Cykhvi0fBQntGG5JSprESasEyV1EZ/4CiR5WB5KjzLTrP/bO37B0wPg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: true
+
+  /stripe@15.1.0:
+    resolution: {integrity: sha512-yMsP9VWsQKkmR14E7MhtFDYKCoYCnhG/tLtiMnNiSiVisDezU2OKJ2T9myufYKl922H85nvCgaczyBLovaJTVA==}
+    engines: {node: '>=12.*'}
+    dependencies:
+      '@types/node': 20.10.3
+      qs: 6.11.2
+    dev: false
 
   /strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}

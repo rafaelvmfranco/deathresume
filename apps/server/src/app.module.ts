@@ -21,6 +21,9 @@ import { UtilsModule } from "./utils/utils.module";
 import { PlanModule } from "./plan/plan.module";
 import { UsageModule } from "./usage/usage.module";
 import { SubscriptionModule } from "./subscription/subscription.module";
+import { StripeModule } from "./stripe/stripe.module";
+import { ConfigService } from "@nestjs/config";
+import { Config } from "./config/schema";
 
 @Module({
   imports: [
@@ -44,6 +47,15 @@ import { SubscriptionModule } from "./subscription/subscription.module";
     PlanModule,
     UsageModule,
     SubscriptionModule,
+    StripeModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService<Config>) => ({
+        apiKey: configService.getOrThrow("STRIPE_API_KEY"),
+        options: {
+          apiVersion: "2024-04-10",
+        },
+      }),
+    }),
 
     // Static Assets
     ServeStaticModule.forRoot({

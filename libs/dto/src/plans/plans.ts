@@ -9,10 +9,12 @@ const maxContent = z.object({
   downloads: z.number().nullable(),
   views: z.number().nullable(),
   alWords: z.number().nullable(),
+  stripePriceId: z.string()
 });
 
 const planContent = z.object({
   price: z.number(),
+  stripePriceId: z.string(),
   max: maxContent,
 });
 

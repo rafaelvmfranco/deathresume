@@ -20,7 +20,7 @@ export class UsageResumeGuard implements CanActivate {
     const usage = await this.usageService.findOneByUserId((user as UserDto).id);
     const subscription = await this.subscriptionService.getByUserId((user as UserDto).id);
 
-    const period = subscription.period.name;
+    const period = subscription.period;
 
     const plan = subscription.plan[period].max;
 

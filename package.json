@@ -227,6 +227,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.0",
+    "stripe": "^15.1.0",
     "tailwind-merge": "^2.1.0",
     "tslib": "^2.6.2",
     "unique-names-generator": "^4.7.1",

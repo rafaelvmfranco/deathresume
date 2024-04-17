@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { User as UserEntity } from "@prisma/client";
 import { SubscriptionWithPlan } from "@reactive-resume/dto";
@@ -23,4 +23,22 @@ export class SubscriptionController {
     return this.subscriptionService.ifShowResume(user.id);
   }
 
+  @Post("")
+  @UseGuards(TwoFactorGuard)
+  create(@Body() body: { stripePriceId: string; userEmail: string }) {
+    return this.subscriptionService.create(body.stripePriceId, body.userEmail);
+  }
+
+  @UseGuards(TwoFactorGuard)
+  @Post("webhook")
+  handleWebhook(@Body() body: any) {
+    return this.subscriptionService.handleWebhook(body);
+  }
+
+  @Patch("")
+  @UseGuards(TwoFactorGuard)
+  update(@Body() body: { stripePriceId: string; subscriptionId: string }) {
+
+    return this.subscriptionService.update(body.stripePriceId, body.subscriptionId);
+  }
 }
