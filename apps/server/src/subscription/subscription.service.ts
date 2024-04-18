@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 
 import { FirebaseService } from "../firebase/firebase.service";
 import { SubscriptionDto, SubscriptionWithPlan, PlanDto } from "@reactive-resume/dto";
@@ -80,7 +80,16 @@ export class SubscriptionService {
     });
   }
 
-  async handleWebhook(eventBody: any) {}
+  async handleWebhook(body: any, signature: string) {
+console.log("handleWebhook - service")
+    let event = null;
+      try {
+        event = await this.stripeService.constructEvent(body, signature);
+      } catch (error){
+        console.log("handleWebhook - service - 1", error.message)
+        throw new HttpException(`Webhook Error: ${error.message}`, HttpStatus.BAD_REQUEST);
+      }
+  }
 
   async isSubscriptionPaid(userId: string) {
     const subscription = await this.getByUserId(userId);

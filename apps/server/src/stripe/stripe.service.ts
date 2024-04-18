@@ -23,9 +23,9 @@ export class StripeService {
     return await this.stripe.paymentIntents.list();
   }
 
-  async handleWebhook(eventBody: any) {
-    // depends on type of event
-    console.log("eventBody", eventBody);
+  async constructEvent(requestBody: any, signature: string) {
+    const webhookEndpoint = this.configService.getOrThrow("STRIPE_WEBHOOK_SECRET");
+    return this.stripe.webhooks.constructEvent(requestBody, signature, webhookEndpoint);
   }
 
   async createCustomer(userEmail: string) {

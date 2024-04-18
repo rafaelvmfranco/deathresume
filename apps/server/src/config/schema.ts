@@ -74,8 +74,7 @@ export const configSchema = z.object({
   STRIPE_API_KEY: z.string().optional(),
   CLIENT_STRIPE_CUSTOMER_PORTAL_URL: z.string().url().optional(),
   STRIPE_CREATE_SUCCESS_URL: z.string().optional(),
-  STRIPE_UPDATE_SUCCESS_URL: z.string().optional(),
-
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;
