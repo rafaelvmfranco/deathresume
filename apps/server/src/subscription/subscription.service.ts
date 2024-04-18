@@ -81,12 +81,11 @@ export class SubscriptionService {
   }
 
   async handleWebhook(body: any, signature: string) {
-console.log("handleWebhook - service")
     let event = null;
       try {
         event = await this.stripeService.constructEvent(body, signature);
       } catch (error){
-        console.log("handleWebhook - service - 1", error.message)
+        Logger.error("Connection to Stripe failed:", error);
         throw new HttpException(`Webhook Error: ${error.message}`, HttpStatus.BAD_REQUEST);
       }
   }
