@@ -31,7 +31,6 @@ export class SubscriptionController {
 
   @Post("webhook")
   async handleWebhook(@Headers('stripe-signature') signature: string, @Req() req: RawBodyRequest<Request>) {
-    console.log("GETpost webhook",);
     const rawReq = req.rawBody;
     return await this.subscriptionService.handleWebhook(rawReq, signature);
   }
