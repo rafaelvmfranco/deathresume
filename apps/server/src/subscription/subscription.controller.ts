@@ -29,10 +29,10 @@ export class SubscriptionController {
     return this.subscriptionService.create(body.stripePriceId, body.userEmail);
   }
 
-  @UseGuards(TwoFactorGuard)
   @Post("webhook")
-  handleWebhook(@Body() body: any) {
-    return this.subscriptionService.handleWebhook(body);
+  async handleWebhook(@Headers('stripe-signature') signature: string, @Req() req: RawBodyRequest<Request>) {
+    const rawReq = req.rawBody;
+    return await this.subscriptionService.handleWebhook(rawReq, signature);
   }
 
   @Patch("")
