@@ -1,7 +1,14 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 
 import { FirebaseService } from "../firebase/firebase.service";
-import { SubscriptionDto, SubscriptionWithPlan, PlanDto } from "@reactive-resume/dto";
+import {
+  SubscriptionDto,
+  SubscriptionWithPlan,
+  PlanDto,
+  PeriodName,
+  UserWithSecrets,
+  UserDto,
+} from "@reactive-resume/dto";
 import { PlanService } from "../plan/plan.service";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { UsageService } from "../usage/usage.service";
@@ -35,6 +42,12 @@ export class SubscriptionService {
     };
   }
 
+  async findByStripePriceId(priceId: string) {
+    return await this.firebaseService.findUnique("subscriptionCollection", {
+      condition: { field: "payment.priceId", value: priceId },
+    });
+  }
+
   async setDefaultSubscription(userId: string) {
     const freePlanId = await this.planService.getFreePlanId();
 
@@ -52,41 +65,67 @@ export class SubscriptionService {
     });
   }
 
-  async create(priceId: string, userEmail: string) {
-    const customer = await this.stripeService.createCustomer(userEmail);
+  async create(user: UserDto, stripePriceId: string) {
+    const customer = await this.stripeService.createCustomer(user.email);
 
-    // save customer id to subscription
-    Logger.log("customer - subs service", JSON.stringify(customer));
+    await this.firebaseService.updateItem(
+      "subscriptionCollection",
+      {
+        condition: {
+          field: "userId",
+          value: user.id,
+        },
+      },
+      {
+        dto: {
+          payment: {
+            customerId: customer.id,
+          },
+        },
+      },
+    );
 
-    const session = await this.stripeService.createSubscription(priceId, customer.id);
-    Logger.log("session - subs service", JSON.stringify(session));
+    const session = await this.stripeService.createSubscription(stripePriceId, customer.id);
+
     return session.url;
   }
 
   async update(priceId: string, subscriptionId: string) {
     const stripeSubscription = await this.stripeService.updateSubscription(priceId, subscriptionId);
 
-    console.log("stripeSubscription", stripeSubscription);
+    const interval = stripeSubscription.plan.interval as PeriodName;
+    const planId = await this.planService.getPlanByPriceId(stripeSubscription.plan.id, interval);
 
-    const interval = stripeSubscription.plan.interval;
-    const planId = stripeSubscription.plan.id;
+    const updatedDto = {
+      activeUntil: stripeSubscription.endPeriod,
+      lastPaymentAt: new Date(),
+      period: interval,
+      planId,
+    };
 
-    const plans = await this.planService.getAll();
-    const plan = (plans as unknown as any[]).find(
-      (plan) => plan[interval].stripePriceId === planId,
+    const updated = await this.firebaseService.updateItem(
+      "subscriptionCollection",
+      {
+        condition: {
+          field: "payment.subscriptionId",
+          value: subscriptionId,
+        },
+      },
+      {
+        dto: updatedDto,
+      },
     );
 
-    console.log("plan", plan);
-
-    // update local subscription with new plan
-
-    // update updated plan
+    return updated;
   }
 
   async stopSubscription(userId: string) {
-    // fix: extract subscription id from subscription
-    const subscriptionId = "";
-    await this.stripeService.cancelSubscription(subscriptionId);
+
+    const subscription = await this.firebaseService.findUnique("subscriptionCollection", {
+      condition: { field: "userId", value: userId },
+    });
+
+    await this.stripeService.cancelSubscription(subscription.payment.subscriptionId);
 
     return await this.firebaseService.deleteByField("subscriptionCollection", {
       condition: { field: "userId", value: userId },
@@ -111,27 +150,42 @@ export class SubscriptionService {
     //console.log("event type", event);
     switch (event.type) {
       case "invoice.payment_succeeded":
-        // update subscription //
-        console.log("event - lines data", event.data.object.lines.data[0]);
-        console.log("subscription id", event.data.object.subscription);
-        console.log("customer id", event.data.object.customer);
-        console.log("subscription details", event.data.object.subscription_details);
-        console.log("subscription period end", event.data.object.period_end);
-        console.log("subscription period real end", event.data.object.lines.data[0].period.end);
-        console.log("subscription period real start", event.data.object.lines.data[0].period.start);
+        const priceId = event.data.object.lines.data[0].plan.id;
+        const period = event.data.object.lines.data[0].plan.interval;
 
-        console.log("subscription plan id", event.data.object.lines.data[0].plan.id);
-        console.log("subscription plan interval", event.data.object.lines.data[0].plan.interval);
-        // find by customer id :
-        // - add subscription id
-        // update period (calculate difference between timestamps)
-        // startedPaymentAt - add
-        // and date end of subscription
-        // change plan id - how?? by price id
+        const currentPlanId = await this.planService.getPlanByPriceId(priceId, period);
+
+        const updatedDto = {
+          activeUntil: event.data.object.lines.data[0].period.end,
+          lastPaymentAt: event.data.object.lines.data[0].period.start,
+          startPaymentAt: event.data.object.lines.data[0].period.start,
+          period: event.data.object.lines.data[0].plan.interval,
+          payment: {
+            subscriptionId: event.data.object.subscription,
+          },
+          planId: currentPlanId,
+        };
+
+        const customerId = event.data.object.customer;
+
+        await this.firebaseService.updateItem(
+          "subscriptionCollection",
+          {
+            condition: {
+              field: "payment.customerId",
+              value: customerId,
+            },
+          },
+          {
+            dto: updatedDto,
+          },
+        );
+
         break;
 
-      case "subscription.updated":
-        console.log("event", event);
+      case "customer.subscription.updated":
+        // cancel subscription case
+
         break;
       default:
         break;
@@ -146,8 +200,6 @@ export class SubscriptionService {
   async findRealUsage(userId: string) {
     const usage = await this.usageService.findOneByUserId(userId);
     const subscription = await this.getByUserId(userId);
-
-    const period = subscription.period;
 
     const plan = subscription.plan.max;
 

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { FirebaseService } from "../firebase/firebase.service";
-import { PlanDto } from "@reactive-resume/dto";
+import { PeriodName, PlanDto } from "@reactive-resume/dto";
 
 @Injectable()
 export class PlanService {
@@ -18,6 +18,14 @@ export class PlanService {
   async getFreePlanId(): Promise<string> {
     const planId = await this.firebaseService.findDocId("planCollection", {
       condition: { field: "name", value: "free" },
+    });
+
+    return planId;
+  }
+
+  async getPlanByPriceId(priceId: string, interval: PeriodName) {
+    const planId = await this.firebaseService.findDocId("planCollection", {
+      condition: { field: `${interval}.stripePriceId`, value: priceId },
     });
 
     return planId;

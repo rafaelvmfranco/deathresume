@@ -1,7 +1,16 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+  Headers,
+  Req,
+  RawBodyRequest,
+} from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { User as UserEntity } from "@prisma/client";
-import { SubscriptionWithPlan } from "@reactive-resume/dto";
+import { SubscriptionWithPlan, UserDto } from "@reactive-resume/dto";
 import { User } from "@/server/user/decorators/user.decorator";
 import { TwoFactorGuard } from "../auth/guards/two-factor.guard";
 import { SubscriptionService } from "./subscription.service";
@@ -13,20 +22,20 @@ export class SubscriptionController {
 
   @Get()
   @UseGuards(TwoFactorGuard)
-  async findByUserId(@User() user: UserEntity): Promise<SubscriptionWithPlan> {
+  async findByUserId(@User() user: UserDto): Promise<SubscriptionWithPlan> {
     return await this.subscriptionService.getByUserId(user.id);
   }
 
   @Get("show")
   @UseGuards(TwoFactorGuard)
-  ifShowOne(@User() user: UserEntity) {
+  ifShowOne(@User() user: UserDto) {
     return this.subscriptionService.ifShowResume(user.id);
   }
 
   @Post("")
   @UseGuards(TwoFactorGuard)
-  create(@Body() body: { stripePriceId: string; userEmail: string }) {
-    return this.subscriptionService.create(body.stripePriceId, body.userEmail);
+  create(@User() user: UserDto, @Body("stripePriceId") stripePriceId: string) {
+    return this.subscriptionService.create(user, stripePriceId);
   }
 
   @Post("webhook")
