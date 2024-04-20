@@ -48,17 +48,17 @@ export const transformPlan = (
     downloads: !planByPeriod.max.downloads
       ? `Unlimited`
       : `${planByPeriod.max.downloads} ${planByPeriod.max.downloads > 1 ? "resumes" : "resume"}`,
-    views: defineViewText(plan.name, planByPeriod.max.resumes),
+    views: defineViewText(plan.name, planByPeriod.max.resumes, currentPeriod),
     sharing: "Resume sharing link",
     alWords: `${planByPeriod.max.alWords} Al words`,
     stripePriceId: planByPeriod.stripePriceId,
   };
 };
 
-const defineViewText = (plan: PlanName, viewMax: number | null) => {
+const defineViewText = (plan: PlanName, viewMax: number | null, currentPeriod: PeriodName) => {
   if (!viewMax) return "Unlimited resume views";
   if (plan === "free") return `${viewMax} views for free`;
-  return `${viewMax} resume views/month`;
+  return `${viewMax} resume views/${currentPeriod}`;
 };
 
 export const isSubscribedToFreePlan = (subscription: SubscriptionWithPlan) => {
