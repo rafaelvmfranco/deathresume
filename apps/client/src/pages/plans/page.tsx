@@ -12,6 +12,7 @@ import {
 import { useGetSubscription } from "@/client/services/subscription";
 import { useUpdateSubscription } from "@/client/services/subscription/update";
 import { useCreateSubscription } from "@/client/services/subscription/create";
+import { toast } from "@/client/hooks/use-toast";
 
 export const PlansPage = () => {
   const { plans, error } = useGetPlans();
@@ -34,17 +35,23 @@ export const PlansPage = () => {
 
       if (isSubscribedToFreePlan(subscription)) {
         const url = await createSubscription({
-          stripePriceId: plan.stripePriceId,
-          userEmail: "email@gmail.com",
+          stripePriceId: plan.stripePriceId
         });
         if (url) window.location.href = url;
         return;
       }
 
-      await updateSubscription({
+      const response = await updateSubscription({
         stripePriceId: plan.stripePriceId,
-        subscriptionId: "sub_1P6X7NBSh4mnnAIl81EMD4av",
+        subscriptionId: subscription.payment?.subscriptionId || "",
       });
+      if (response){
+        toast({
+          variant: "success",
+          title: `Subscription updated.`,
+          description: `You are now subscribed to ${plan.name} per ${currentPeriod} plan.  `
+        });
+      }
     }
   };
   

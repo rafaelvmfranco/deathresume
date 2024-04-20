@@ -24,5 +24,7 @@ export const planSchema = z.object({
   month: planContent,
 });
 
+export const shortPlanSchema = planContent.merge(z.object({ name: PlanNameSchema }));
+
 export class PlanDto extends createZodDto(planSchema) {}
 export type PlanName = z.infer<typeof PlanNameSchema>;

@@ -2,7 +2,7 @@ import { idSchema } from "@reactive-resume/schema";
 import { createZodDto } from "nestjs-zod/dto";
 import { z } from "nestjs-zod/z";
 
-import { planSchema } from "../plans";
+import { shortPlanSchema } from "../plans";
 
 const PeriodNameSchema = z.enum(["month", "year"]);
 
@@ -25,7 +25,7 @@ export const subscriptionSchema = z.object({
 
 export class SubscriptionDto extends createZodDto(subscriptionSchema) {}
 
-export const subscriptionWithPlanSchema = subscriptionSchema.merge(z.object({ plan: planSchema }));
+export const subscriptionWithPlanSchema = subscriptionSchema.merge(z.object({ plan: shortPlanSchema }));
 
 export class SubscriptionWithPlan extends createZodDto(subscriptionWithPlanSchema) {}
 
