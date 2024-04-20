@@ -22,7 +22,7 @@ export class UsageResumeGuard implements CanActivate {
 
     const period = subscription.period;
 
-    const plan = subscription.plan[period].max;
+    const plan = subscription.plan.max;
 
     let usageErrorText = "";
 
