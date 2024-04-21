@@ -93,12 +93,15 @@ export class SubscriptionService {
   async update(priceId: string, subscriptionId: string) {
     const stripeSubscription = await this.stripeService.updateSubscription(priceId, subscriptionId);
 
-    const interval = stripeSubscription.plan.interval as PeriodName;
-    const planId = await this.planService.getPlanByPriceId(stripeSubscription.plan.id, interval);
+    const interval = (stripeSubscription as any).plan.interval as PeriodName;
+    const planId = await this.planService.getPlanByPriceId(
+      (stripeSubscription as any).plan.id,
+      interval,
+    );
 
     const updatedDto = {
-      activeUntil: stripeSubscription.endPeriod,
-      lastPaymentAt: new Date(),
+      activeUntil: stripeSubscription.current_period_end,
+      lastPaymentAt: stripeSubscription.current_period_start,
       period: interval,
       planId,
     };
@@ -116,11 +119,10 @@ export class SubscriptionService {
       },
     );
 
-    return updated;
+    return Boolean(updated);
   }
 
   async stopSubscription(userId: string) {
-
     const subscription = await this.firebaseService.findUnique("subscriptionCollection", {
       condition: { field: "userId", value: userId },
     });
@@ -146,20 +148,22 @@ export class SubscriptionService {
   }
 
   async handleEvent(event: any) {
-    console.log("event type", event.type);
-    //console.log("event type", event);
-    switch (event.type) {
-      case "invoice.payment_succeeded":
-        const priceId = event.data.object.lines.data[0].plan.id;
-        const period = event.data.object.lines.data[0].plan.interval;
 
-        const currentPlanId = await this.planService.getPlanByPriceId(priceId, period);
+    switch (event.type) {
+      // for changes and tracking future renewals
+      case "invoice.paid":
+        const currentPlan =
+        event.data.object.lines.data.length < 2
+            ? event.data.object.lines.data[0]
+            : event.data.object.lines.data[event.data.object.lines.data.length - 1];
+
+        const currentPlanId = await this.planService.getPlanByPriceId(currentPlan.plan.id, currentPlan.plan.interval);
 
         const updatedDto = {
-          activeUntil: event.data.object.lines.data[0].period.end,
-          lastPaymentAt: event.data.object.lines.data[0].period.start,
-          startPaymentAt: event.data.object.lines.data[0].period.start,
-          period: event.data.object.lines.data[0].plan.interval,
+          activeUntil: currentPlan.period.end,
+          lastPaymentAt: currentPlan.period.start,
+          startPaymentAt: currentPlan.period.start,
+          period: currentPlan.plan.interval,
           payment: {
             subscriptionId: event.data.object.subscription,
           },
@@ -183,10 +187,6 @@ export class SubscriptionService {
 
         break;
 
-      case "customer.subscription.updated":
-        // cancel subscription case
-
-        break;
       default:
         break;
     }
@@ -194,7 +194,7 @@ export class SubscriptionService {
 
   async isSubscriptionPaid(userId: string) {
     const subscription = await this.getByUserId(userId);
-    return Boolean(subscription.activeUntil > new Date().getTime());
+    return Boolean(subscription.activeUntil * 1000 > Number(new Date()));
   }
 
   async findRealUsage(userId: string) {
