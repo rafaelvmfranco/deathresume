@@ -45,6 +45,7 @@ export const transformPlan = (
       : `${planByPeriod.max.resumes} ${planByPeriod.max.resumes > 1 ? "resumes" : "resume"}`,
     downloads: !planByPeriod.max.downloads
       ? `Unlimited`
+
       : `${planByPeriod.max.downloads} ${planByPeriod.max.downloads > 1 ? "resumes" : "resume"}`,
     views: defineViewText(plan.name, planByPeriod.max.resumes, currentPeriod),
     sharing: "Resume sharing link",
