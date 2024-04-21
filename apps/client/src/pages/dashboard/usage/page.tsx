@@ -1,17 +1,15 @@
 import { Link } from "react-router-dom";
 import { t } from "@lingui/macro";
-import { ScrollArea, Separator } from "@reactive-resume/ui";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
 import { useGetUsage } from "@/client/services/usage";
 import { useGetSubscription } from "@/client/services/subscription";
 import {
-  PlanDto,
+  ShortPlanDto,
   SubscriptionWithPlan,
   UsageDto,
   UsageUpdateFields,
-  PeriodName,
 } from "@reactive-resume/dto";
 
 type BarData = {
@@ -24,12 +22,12 @@ type BarData = {
   title: string;
 };
 
-const isPlanFree = (data: PlanDto | undefined) => {
+const isPlanFree = (data: ShortPlanDto | undefined) => {
   if (!data) return true;
   return data.name === "free" ? true : false;
 };
 
-function getPlanTitle(data: PlanDto | undefined) {
+function getPlanTitle(data: ShortPlanDto | undefined) {
   if (!data) return "Your plan";
   const str = data.name;
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -67,19 +65,17 @@ const getUsageBars = (subscription: SubscriptionWithPlan | null, usage: UsageDto
     },
   ];
 
-  const period: PeriodName | undefined = subscription?.period?.name || "year";
-
   const updatedBars: BarData[] = bars.map(
     (bar: { name: UsageUpdateFields; title: string; style: string }) => {
       return {
         ...bar,
         currentNumber: usage[bar.name],
-        limitNumber: subscription?.plan[period].max[bar.name]
-          ? subscription?.plan[period].max[bar.name]
+        limitNumber: subscription?.plan.max[bar.name]
+          ? subscription?.plan.max[bar.name]
           : "Unlimited",
-        startNumber: !subscription?.plan[period].max[bar.name] ? 0 : usage[bar.name],
-        endNumber: subscription?.plan[period].max[bar.name]
-          ? subscription?.plan[period].max[bar.name]
+        startNumber: !subscription?.plan.max[bar.name] ? 0 : usage[bar.name],
+        endNumber: subscription?.plan.max[bar.name]
+          ? subscription?.plan.max[bar.name]
           : 100,
       };
     },
@@ -91,8 +87,6 @@ const getUsageBars = (subscription: SubscriptionWithPlan | null, usage: UsageDto
 export const UsagePage = () => {
   const { usage } = useGetUsage();
   const { subscription } = useGetSubscription();
-
-
 
   return (
     <>

@@ -56,23 +56,23 @@ export class StripeService {
   async updateSubscription(priceId: string, subscriptionId: string) {
     const currentSession = await this.stripe.subscriptions.retrieve(subscriptionId);
 
-    // 1 user can have 1 item in subcription only
     const itemId = currentSession.items.data[0].id;
 
-    const subscriptionItem = await this.stripe.subscriptionItems.update(itemId, {
-      price: priceId,
+    const subscription = await this.stripe.subscriptions.update(subscriptionId, {
+      items: [
+        {
+          id: itemId,
+          price: priceId,
+        },
+      ],
     });
 
-    const newSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-
-    return { endPeriod: newSubscription.current_period_end, ...subscriptionItem };
+    return subscription;
   }
 
   async cancelSubscription(subscriptionId: string) {
     // cancel immediately
-    const subscription = await this.stripe.subscriptions.cancel(
-      subscriptionId,
-    );
+    const subscription = await this.stripe.subscriptions.cancel(subscriptionId);
 
     return subscription;
   }

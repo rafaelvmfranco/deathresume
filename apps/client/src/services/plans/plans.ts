@@ -18,12 +18,10 @@ export const useGetPlans = () => {
     error,
     isLoading: loading,
     data: plans,
-  } = useQuery({
+  } = useQuery<PlanDto[], Error>({
     queryKey: PLANS_KEY,
     queryFn: getPlans,
   });
-
-  usePlansStore.setState({ plans });
 
   return { plans, loading, error };
 };
@@ -68,17 +66,7 @@ export const isSubscribedToFreePlan = (subscription: SubscriptionWithPlan) => {
 
 export const ifStartCheckout = (
   plan: PlanDto,
-  currentPeriod: "month" | "year",
-  subscription: SubscriptionWithPlan,
 ) => {
-  if (plan.name === subscription.plan.name && currentPeriod === subscription.period) {
-    toast({
-      variant: "success",
-      title: `It is your current plan`,
-      description: `You are already on the ${plan.name} plan.`,
-    });
-    return false;
-  }
 
   if (plan.name === "free") {
     toast({

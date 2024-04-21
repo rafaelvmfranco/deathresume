@@ -18,7 +18,7 @@ export class PaymentResumeGuard implements CanActivate {
     const subscription = await this.subscriptionService.getByUserId((user as UserDto).id);
 
     const activeUntil = subscription.activeUntil;
-    let isPaid = Boolean(activeUntil > new Date().getTime());
+    let isPaid = Boolean(activeUntil * 1000 > Number(new Date()));
 
     if (!isPaid) {
       throw new NotFoundException(ErrorMessage.PaymentPeriodEnded);
