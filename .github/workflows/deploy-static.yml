@@ -42,9 +42,8 @@ jobs:
           path: 'dist/apps'
       - name: Setup Pages
         uses: actions/configure-pages@v2
-        - name: Configure Pages
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
