@@ -1,5 +1,6 @@
 {
   "name": "@death-resume/source",
+  "type": "module",
   "description": "Resume builder that simplifies the process of creating, updating, and sharing your resume.",
   "version": "1.0.0",
   "private": true,
