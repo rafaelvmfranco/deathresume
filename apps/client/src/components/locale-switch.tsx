@@ -13,8 +13,13 @@ export const LocaleSwitch = ({setLight = false}) => {
   const { i18n } = useLingui();
   const [open, setOpen] = useState(false);
 
-  const colorStyle = {
-    variant: setLight ? "" : "ghost",
+  const colorStyle: {
+    variant: "ghost" | null;
+    buttonClass: string;
+    textClass: string;
+  
+  } = {
+    variant: setLight ? null : "ghost",
     buttonClass: setLight ? "bg-violet hover:bg-violet" : "",
     textClass: setLight ? "text-white" : ""
   }

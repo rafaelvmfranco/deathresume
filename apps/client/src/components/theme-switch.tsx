@@ -21,8 +21,12 @@ export const ThemeSwitch = ({ size = 20, setLight = false }: Props) => {
     };
   }, [size]);
 
-  const colorStyle = {
-    variant: setLight ? "" : "ghost",
+  const colorStyle: {
+    variant: "ghost" | null,
+    buttonClass: string;
+  
+  } = {
+    variant: setLight ? null : "ghost",
     buttonClass: setLight ? "bg-violet hover:bg-violet" : ""
   }
 
