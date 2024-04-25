@@ -15,6 +15,8 @@
     "test": "nx run-many -t test",
     "prebuild": "pnpm prisma:generate",
     "build": "nx run-many -t build",
+    "build-client": "nx build client",
+    "build-artboard": "nx build artboard",
     "prestart": "pnpm prisma:migrate",
     "start": "node dist/apps/server/main",
     "lint": "nx run-many -t lint --fix",
