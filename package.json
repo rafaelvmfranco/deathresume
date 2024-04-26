@@ -1,5 +1,6 @@
 {
   "name": "@death-resume/source",
+  "homepages": "https://rafaelvmfranco.github.io/deathresume/",
   "description": "Resume builder that simplifies the process of creating, updating, and sharing your resume.",
   "version": "1.0.0",
   "private": true,
