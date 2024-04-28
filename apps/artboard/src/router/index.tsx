@@ -1,4 +1,4 @@
-import { createHashRouter, createRoutesFromChildren, Route } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromChildren, Route } from "react-router-dom";
 
 import { ArtboardPage } from "../pages/artboard";
 import { BuilderLayout } from "../pages/builder";
@@ -14,4 +14,4 @@ export const routes = createRoutesFromChildren(
   </Route>,
 );
 
-export const router = createHashRouter(routes);
+export const router = createBrowserRouter(routes);

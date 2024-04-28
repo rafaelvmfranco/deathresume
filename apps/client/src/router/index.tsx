@@ -1,4 +1,4 @@
-import { createHashRouter, createRoutesFromElements, Navigate, Route } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route } from "react-router-dom";
 
 import { BackupOtpPage } from "../pages/auth/backup-otp/page";
 import { ForgotPasswordPage } from "../pages/auth/forgot-password/page";
@@ -94,4 +94,4 @@ export const routes = createRoutesFromElements(
   </Route>,
 );
 
-export const router = createHashRouter(routes);
+export const router = createBrowserRouter(routes);
