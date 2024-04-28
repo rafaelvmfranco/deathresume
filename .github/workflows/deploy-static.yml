@@ -36,6 +36,8 @@ jobs:
         run: pnpm build:client
       - name: Build artboard
         run: pnpm build:artboard
+      - name: Move 404.html
+        run: mv dist/apps/client/404.html dist/apps/404.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
