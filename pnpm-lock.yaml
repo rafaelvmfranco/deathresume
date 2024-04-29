@@ -19988,7 +19988,7 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /webpack-dev-middleware@5.3.3(webpack@5.89.0):
+  /webpack-dev-middleware@5.3.4(webpack@5.89.0):
     resolution: {integrity: sha512-hj5CYrY0bZLB+eTO+x/j67Pkrquiy7kWepMHmUMoPsmcUaeEnQJqFzHJOyxgWlq746/wUuA64p9ta34Kyb01pA==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
@@ -20044,7 +20044,7 @@ packages:
       sockjs: 0.3.24
       spdy: 4.0.2
       webpack: 5.89.0(@swc/core@1.3.100)
-      webpack-dev-middleware: 5.3.3(webpack@5.89.0)
+      webpack-dev-middleware: 5.3.4(webpack@5.89.0)
       ws: 8.14.2
     transitivePeerDependencies:
       - bufferutil
