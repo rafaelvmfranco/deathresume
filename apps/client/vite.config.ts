@@ -8,7 +8,7 @@ import { defineConfig, searchForWorkspaceRoot, splitVendorChunkPlugin } from "vi
 export default defineConfig({
   cacheDir: "../../node_modules/.vite/client",
 
-  base: "/deathresume/client/",
+  base: "/deathresume/",
 
   build: {
     sourcemap: true,

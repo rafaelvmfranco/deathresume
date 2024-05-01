@@ -25,7 +25,8 @@ import { GuestGuard } from "./guards/guest";
 import { authLoader } from "./loaders/auth";
 
 export const routes = createRoutesFromElements(
-  <Route path="deathresume/client" element={<Providers />}>
+  <Route path="deathresume" element={<Providers />}>
+    {/* <Route index element={<Navigate to="/deathresume" replace />} /> */}
     <Route element={<HomeLayout />}>
       <Route path="" element={<HomePage />} />
     </Route>
@@ -58,7 +59,7 @@ export const routes = createRoutesFromElements(
         <Route path="callback" loader={authLoader} />
       </Route>
 
-      <Route index element={<Navigate to="/deathresume/client/auth/login" replace />} />
+      <Route index element={<Navigate to="/auth/login" replace />} />
     </Route>
 
     <Route path="dashboard">
