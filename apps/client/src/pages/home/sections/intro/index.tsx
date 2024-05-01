@@ -57,7 +57,7 @@ export const IntroSection = () => (
               <img
                 width={1000}
                 height="auto"
-                src="/screenshots/builder.jpg"
+                src="/deathresume/client/screenshots/builder.jpg"
                 alt="Death Resume - Screenshot - Builder Screen"
                 className="object-cover rounded-lg bg-background/5 shadow-2xl ring-1 ring-foreground/10"
               />

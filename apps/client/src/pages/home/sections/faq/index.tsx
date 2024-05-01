@@ -87,7 +87,7 @@ const Question6 = () => (
 export const FAQSection = () => (
   <section id="faq" className="container relative grid grid-cols-1 lg:grid-cols-3 gap-4 py-12 sm:py-16 text-violet dark:text-white">
     <div className="col-span-1">
-      <img src="src/assets/logos/logo-picture.png" alt="Death Resume" className="h-full w-70 object-cover py-16 lg:py-24"/>
+      <img src="/deathresume/client/logo/logo-picture.png" alt="Death Resume" className="h-full w-70 object-cover py-16 lg:py-24"/>
     </div>
     <div className="col-span-2">
      

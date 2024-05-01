@@ -45,7 +45,7 @@ export const TemplatesSection = () => (
               key={index}
               target="_blank"
               rel="noreferrer"
-              href={`templates/pdf/${template}.pdf`}
+              href={`/deathresume/client/templates/pdf/${template}.pdf`}
               className="max-w-none flex-none"
               viewport={{ once: true }}
               initial={{ opacity: 0, x: -100 }}
@@ -54,7 +54,7 @@ export const TemplatesSection = () => (
               <img
                 alt={template}
                 loading="lazy"
-                src={`/templates/jpg/${template}.jpg`}
+                src={`/deathresume/client/templates/jpg/${template}.jpg`}
                 className=" aspect-[1/1.4142] h-[400px] rounded object-cover lg:h-[600px]"
               />
             </motion.a>
