@@ -10,9 +10,9 @@ type Props = {
 export const Logo = ({ size = 32, setLight = false, className }: Props) => {
   const { isDarkMode } = useTheme();
 
-  let srcForMode = isDarkMode ? "src/assets/logos/logo-text-light.png" : "src/assets/logos/logo-text-bright.png" 
+  let srcForMode = isDarkMode ? "deathresume/client/logo/logo-text-light.png" : "deathresume/client/logo/logo-text-bright.png" 
 
-  if (setLight) srcForMode = "src/assets/logos/logo-text-light.png"
+  if (setLight) srcForMode = "deathresume/client/logo/logo-text-light.png"
   
   return (
     <img
