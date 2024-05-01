@@ -42,7 +42,7 @@ export const ResetPasswordPage = () => {
     try {
       await resetPassword(data);
 
-      navigate("/auth/login");
+      navigate("/deathresume/client/auth/login");
     } catch (error) {
       form.reset();
     }
@@ -50,7 +50,7 @@ export const ResetPasswordPage = () => {
 
   // Redirect the user to the forgot password page if the token is not present.
   useEffect(() => {
-    if (!token) navigate("/auth/forgot-password");
+    if (!token) navigate("/deathresume/client/auth/forgot-password");
   }, [token, navigate]);
 
   return (

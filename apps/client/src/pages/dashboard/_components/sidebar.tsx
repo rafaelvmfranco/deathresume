@@ -70,30 +70,30 @@ export const Sidebar = ({ setOpen }: SidebarProps) => {
   const navigate = useNavigate();
 
   useKeyboardShortcut(["shift", "r"], () => {
-    navigate("/dashboard/resumes");
+    navigate("/deathresume/client/dashboard/resumes");
     setOpen?.(false);
   });
 
   useKeyboardShortcut(["shift", "s"], () => {
-    navigate("/dashboard/settings");
+    navigate("/deathresume/client/dashboard/settings");
     setOpen?.(false);
   });
 
   const sidebarItems: SidebarItem[] = [
     {
-      path: "/dashboard/resumes",
+      path: "/deathresume/client/dashboard/resumes",
       name: t`Resumes`,
       shortcut: "⇧R",
       icon: <ReadCvLogo />,
     },
     {
-      path: "/dashboard/settings",
+      path: "/deathresume/client/dashboard/settings",
       name: t`Settings`,
       shortcut: "⇧S",
       icon: <FadersHorizontal />,
     },
     {
-      path: "/dashboard/usage",
+      path: "/deathresume/client/dashboard/usage",
       name: t`Usage`,
       shortcut: "⇧U",
       icon: <ChartBar />

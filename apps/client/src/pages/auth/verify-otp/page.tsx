@@ -39,7 +39,7 @@ export const VerifyOtpPage = () => {
     try {
       await verifyOtp(data);
 
-      navigate("/dashboard");
+      navigate("/deathresume/client/dashboard");
     } catch (error) {
       form.reset();
     }

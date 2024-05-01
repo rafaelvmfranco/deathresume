@@ -111,7 +111,7 @@ export const LoginPage = () => {
               </button>
 
               <Button asChild variant="link" className="block p-4 text-gray-500 pb-0">
-                <Link to="/auth/forgot-password">{t`Forgot Password?`}</Link>
+                <Link to="/deathresume/client/auth/forgot-password">{t`Forgot Password?`}</Link>
               </Button>
             </div>
           </form>

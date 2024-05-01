@@ -11,10 +11,10 @@ export const authLoader: LoaderFunction<UserDto> = async ({ request }) => {
 
   const { success } = authResponseSchema.pick({ status: true }).safeParse({ status });
 
-  if (!success) return redirect("/auth/login");
+  if (!success) return redirect("/deathresume/client/auth/login");
 
   if (status === "2fa_required") {
-    return redirect("/auth/verify-otp");
+    return redirect("/deathresume/client/auth/verify-otp");
   }
 
   const user = await queryClient.fetchQuery({
@@ -23,12 +23,12 @@ export const authLoader: LoaderFunction<UserDto> = async ({ request }) => {
   });
 
   if (!user) {
-    return redirect("/auth/login");
+    return redirect("/deathresume/client/auth/login");
   }
 
   if (status === "authenticated") {
     useAuthStore.setState({ user });
 
-    return redirect("/dashboard");
+    return redirect("/deathresume/client/dashboard");
   }
 };

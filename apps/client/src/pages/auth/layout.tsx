@@ -10,7 +10,7 @@ import { useAuthProviders } from "@/client/services/auth/providers";
 
 import { SocialAuth } from "./_components/social-auth";
 
-const authRoutes = [{ path: "/auth/login" }, { path: "/auth/register" }];
+const authRoutes = [{ path: "/deathresume/client/auth/login" }, { path: "/deathresume/client/auth/register" }];
 
 type RoutesData = {
   text: string;
@@ -21,21 +21,21 @@ type RoutesData = {
 const routesData: RoutesData[] = [
   {
     text: "Don't you have an account?",
-    sourseRoute: "/auth/login",
+    sourseRoute: "/deathresume/client/auth/login",
     buttonText: "Create one now",
-    route: "/auth/register",
+    route: "/deathresume/client/auth/register",
   },
   {
     text: "Already have an account?",
-    sourseRoute: "/auth/register",
+    sourseRoute: "/deathresume/client/auth/register",
     buttonText: "Sign in now",
-    route: "/auth/login",
+    route: "/deathresume/client/auth/login",
   },
   {
     text: "",
-    sourseRoute: "/auth/forgot-password",
+    sourseRoute: "/deathresume/client/auth/forgot-password",
     buttonText: "Back",
-    route: "/auth/login",
+    route: "/deathresume/client/auth/login",
   },
 ];
 
@@ -57,7 +57,7 @@ export const AuthLayout = () => {
     <div className="flex h-screen w-screen">
       <div className="fixed top-0 left-0 w-full py-3 flex items-center justify-between z-10">
         <div className="px-8 lg:px-28">
-          <Link to="/">
+          <Link to="/deathresume/client">
             <Logo setLight={true} size={48} />
           </Link>
         </div>

@@ -25,7 +25,7 @@ export const UserOptions = ({ children }: Props) => {
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
 
       <DropdownMenuContent side="top" align="start" className="w-48">
-        <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
+        <DropdownMenuItem onClick={() => navigate("/deathresume/client/dashboard/settings")}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -59,7 +59,7 @@ export const UserOptions = ({ children }: Props) => {
           </DropdownMenuItem>
         </a>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/plans")}>
+        <DropdownMenuItem onClick={() => navigate("/deathresume/client/plans")}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -84,7 +84,7 @@ export const UserOptions = ({ children }: Props) => {
           <KeyboardShortcut>⇧P</KeyboardShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/dashboard/help-center")}>
+        <DropdownMenuItem onClick={() => navigate("deathresume/client/help-center")}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

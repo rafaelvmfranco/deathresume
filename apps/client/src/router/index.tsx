@@ -25,72 +25,72 @@ import { GuestGuard } from "./guards/guest";
 import { authLoader } from "./loaders/auth";
 
 export const routes = createRoutesFromElements(
-  <Route path="" element={<Providers />}>
-    <Route element={<HomeLayout />}>
-      <Route path="" element={<HomePage />} />
-    </Route>
+  <Route path="/deathresume/client" element={<Providers />}>
+      <Route element={<HomeLayout />}>
+        <Route path="" element={<HomePage />} />
+      </Route>
 
-    <Route path="auth">
-      <Route element={<AuthLayout />}>
-        <Route element={<GuestGuard />}>
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
+      <Route path="/deathresume/client/auth">
+        <Route element={<AuthLayout />}>
+          <Route element={<GuestGuard />}>
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+          </Route>
+
+          {/* Password Recovery */}
+          <Route element={<GuestGuard />}>
+            <Route path="forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="reset-password" element={<ResetPasswordPage />} />
+          </Route>
+
+          {/* Two-Factor Authentication */}
+          <Route element={<GuestGuard />}>
+            <Route path="verify-otp" element={<VerifyOtpPage />} />
+            <Route path="backup-otp" element={<BackupOtpPage />} />
+          </Route>
+
+          {/* Email Verification */}
+          <Route element={<AuthGuard />}>
+            <Route path="verify-email" element={<VerifyEmailPage />} />
+          </Route>
+
+          {/* OAuth Callback */}
+          <Route path="callback" loader={authLoader} />
         </Route>
 
-        {/* Password Recovery */}
-        <Route element={<GuestGuard />}>
-          <Route path="forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="reset-password" element={<ResetPasswordPage />} />
-        </Route>
+        <Route index element={<Navigate to="/auth/login" replace />} />
+      </Route>
 
-        {/* Two-Factor Authentication */}
-        <Route element={<GuestGuard />}>
-          <Route path="verify-otp" element={<VerifyOtpPage />} />
-          <Route path="backup-otp" element={<BackupOtpPage />} />
-        </Route>
-
-        {/* Email Verification */}
+      <Route path="/deathresume/client/dashboard">
         <Route element={<AuthGuard />}>
-          <Route path="verify-email" element={<VerifyEmailPage />} />
-        </Route>
+          <Route element={<DashboardLayout />}>
+            <Route path="resumes" element={<ResumesPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="usage" element={<UsagePage />} />
 
-        {/* OAuth Callback */}
-        <Route path="callback" loader={authLoader} />
+            <Route index element={<Navigate to="/deathresume/client/dashboard/resumes" replace />} />
+          </Route>
+        </Route>
       </Route>
 
-      <Route index element={<Navigate to="/deathresume/client/auth/login" replace />} />
-    </Route>
-
-    <Route path="dashboard">
       <Route element={<AuthGuard />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="resumes" element={<ResumesPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="usage" element={<UsagePage />} />
+        <Route path="plans" element={<PlansPage />} />
+      </Route>
 
-          <Route index element={<Navigate to="/dashboard/resumes" replace />} />
+      <Route path="/deathresume/client/builder">
+        <Route element={<AuthGuard />}>
+          <Route element={<BuilderLayout />}>
+            <Route path=":id" loader={builderLoader} element={<BuilderPage />} />
+
+            <Route index element={<Navigate to="/deathresume/client/dashboard/resumes" replace />} />
+          </Route>
         </Route>
       </Route>
-    </Route>
 
-    <Route element={<AuthGuard />}>
-      <Route path="plans" element={<PlansPage />} />
-    </Route>
-
-    <Route path="builder">
-      <Route element={<AuthGuard />}>
-        <Route element={<BuilderLayout />}>
-          <Route path=":id" loader={builderLoader} element={<BuilderPage />} />
-
-          <Route index element={<Navigate to="/dashboard/resumes" replace />} />
-        </Route>
+      {/* Public Routes */}
+      <Route path="/deathresume/client/:username">
+        <Route path=":slug" loader={publicLoader} element={<PublicResumePage />} />
       </Route>
-    </Route>
-
-    {/* Public Routes */}
-    <Route path=":username">
-      <Route path=":slug" loader={publicLoader} element={<PublicResumePage />} />
-    </Route>
   </Route>,
 );
 

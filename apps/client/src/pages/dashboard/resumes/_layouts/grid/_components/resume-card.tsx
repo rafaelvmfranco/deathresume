@@ -42,7 +42,7 @@ export const ResumeCard = ({ resume }: Props) => {
 
   const onOpen = async() => {
     await registerView();
-    navigate(`/builder/${resume.id}`);
+    navigate(`/deathresume/client/builder/${resume.id}`);
   };
 
   const onUpdate = () => {

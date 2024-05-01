@@ -48,7 +48,7 @@ export const HeroSection = () => (
         {/* translation */}
         <div className="pt-8 pb-20 flex justify-center">
           <div>
-            <Link to="/dashboard/resumes">
+            <Link to="/deathresume/client/dashboard/resumes">
               <button className="bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-2xl hover:opacity-80">
               Create my resume
               </button>

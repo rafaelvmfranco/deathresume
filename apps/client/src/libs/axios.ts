@@ -59,7 +59,7 @@ const handleAuthError = async () => {
 const handleRefreshError = async () => {
   try {
     queryClient.invalidateQueries({ queryKey: USER_KEY });
-    redirect("/auth/login");
+    redirect("/deathresume/client/auth/login");
 
     return Promise.resolve();
   } catch (error) {

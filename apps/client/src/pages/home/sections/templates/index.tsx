@@ -16,7 +16,7 @@ export const TemplatesSection = () => (
         </p>
         {/* add translations */}
         <div className="pt-16">
-          <Link to="/dashboard/resumes">
+          <Link to="/deathresume/client/dashboard/resumes">
 
           <button className="bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-lg hover:opacity-80">
             I want my resume

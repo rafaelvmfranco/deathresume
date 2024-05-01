@@ -127,7 +127,7 @@ export const UsagePage = () => {
                 <span>{getPlanTitle(subscription?.plan)}</span>
               </div>
 
-              <Link to={isPlanFree(subscription?.plan) ? "/plans" : "/stripe-route"}>
+              <Link to="/deathresume/client/plans">
                 <button className="bg-reddish rounded-md px-4 py-2 text-white text-lg">
                   {isPlanFree(subscription?.plan) ? `${t`Upgrade`}` : "Manage subscription"}
                 </button>

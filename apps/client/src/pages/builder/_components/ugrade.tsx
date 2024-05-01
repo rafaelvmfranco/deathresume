@@ -7,7 +7,7 @@ export const UpgradePopup = ({ reason }: { reason: string }) => {
         <p className="text-2xl font-bold">Upgrade your plan</p>
         <p>{reason}</p>
         <div className="mt-12">
-          <Link to={"/plans"}>
+          <Link to={"/deathresume/client/plans"}>
             <button className="w-full bg-reddish rounded-md px-4 py-2 text-white text-lg">
               Upgrade now
             </button>

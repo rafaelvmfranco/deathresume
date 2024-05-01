@@ -109,6 +109,8 @@ export const PublicResumePage = () => {
 
 export const publicLoader: LoaderFunction<ResumeDto> = async ({ params }) => {
   try {
+
+    console.log("params", params);
     const username = params.username as string;
     const slug = params.slug as string;
 
@@ -119,6 +121,6 @@ export const publicLoader: LoaderFunction<ResumeDto> = async ({ params }) => {
 
     return resume;
   } catch (error) {
-    return redirect("/deathresume/client");
+    return redirect("/deathresume/client/auth/login");
   }
 };

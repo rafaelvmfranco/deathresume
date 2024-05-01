@@ -48,7 +48,7 @@ export const PlansPage = () => {
       });
       if (response) {
         setTimeout(() => {
-          navigate("/dashboard/resumes");
+          navigate("/deathresume/client/dashboard/resumes");
         }, 2000);
 
         toast({
@@ -91,7 +91,7 @@ export const PlansPage = () => {
 
       <div className="min-h-screen w-screen py-12 px-24 bg-violet text-white dark:bg-black">
         <div className="">
-          <Link to="/dashboard">
+          <Link to="/deathresume/client/dashboard">
             <button className="text-xl text-white">{"\u003C"} &nbsp; Back</button>
           </Link>
         </div>

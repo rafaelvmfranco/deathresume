@@ -53,7 +53,7 @@ export const DangerZoneSettings = () => {
       });
 
       await (async () => {
-        navigate("/");
+        navigate("/deathresume/client");
       })();
     }
   };

@@ -14,13 +14,13 @@ export const Header = () => (
     <ProductHuntBanner />
     <div className="w-full bg-lightViolet py-3 dark:bg-black container flex items-center justify-between">
       <div>
-        <Link to="/">
+        <Link to="/deathresume/client">
           <Logo size={48} />
         </Link>
       </div>     
       <div className="flex gap-8 px-20 text-violet">
-          <Link to="/auth/login"><button className="text-violet font-bold uppercase dark:text-white">Log in</button></Link>
-          <Link to="/auth/register"><button className="text-reddish font-bold uppercase">Sign up</button></Link>
+          <Link to="/deathresume/client/auth/login"><button className="text-violet font-bold uppercase dark:text-white">Log in</button></Link>
+          <Link to="/deathresume/client/auth/register"><button className="text-reddish font-bold uppercase">Sign up</button></Link>
       </div>
     </div>
   </motion.header>

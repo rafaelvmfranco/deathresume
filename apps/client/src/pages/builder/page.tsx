@@ -65,6 +65,6 @@ export const builderLoader: LoaderFunction<ResumeDto> = async ({ params }) => {
 
     return resume;
   } catch (error) {
-    return redirect("/dashboard");
+    return redirect("/deathresume/client/dashboard");
   }
 };

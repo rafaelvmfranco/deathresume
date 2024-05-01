@@ -54,7 +54,7 @@ export const RegisterPage = () => {
     try {
       await register(data);
 
-      navigate("/auth/verify-email");
+      navigate("/deathresume/client/auth/verify-email");
     } catch (error) {
       form.reset();
     }
