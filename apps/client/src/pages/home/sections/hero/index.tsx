@@ -24,7 +24,7 @@ export const HeroSection = () => (
       >
         
         <div className="w-lvw px-12">
-         <img src="/deathresume/logo/logo-big.png" alt="Rip Unemployment - Death Resume" className="w-full h-100 object-cover px-16"/> 
+         <img src="/deathresume/client/logo/logo-big.png" alt="Rip Unemployment - Death Resume" className="w-full h-100 object-cover px-16"/> 
         </div>
         
         <div className="mt-10 space-y-2 text-center text-violet font-black">

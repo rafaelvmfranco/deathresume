@@ -10,7 +10,7 @@ import { useAuthProviders } from "@/client/services/auth/providers";
 
 import { SocialAuth } from "./_components/social-auth";
 
-const authRoutes = [{ path: "deathresume/auth/login" }, { path: "deathresume/auth/register" }];
+const authRoutes = [{ path: "/auth/login" }, { path: "/auth/register" }];
 
 type RoutesData = {
   text: string;
@@ -21,21 +21,21 @@ type RoutesData = {
 const routesData: RoutesData[] = [
   {
     text: "Don't you have an account?",
-    sourseRoute: "/deathresume/auth/login",
+    sourseRoute: "/auth/login",
     buttonText: "Create one now",
-    route: "/deathresume/auth/register",
+    route: "/auth/register",
   },
   {
     text: "Already have an account?",
-    sourseRoute: "/deathresume/auth/register",
+    sourseRoute: "/auth/register",
     buttonText: "Sign in now",
-    route: "/deathresume/auth/login",
+    route: "/auth/login",
   },
   {
     text: "",
-    sourseRoute: "/deathresume/auth/forgot-password",
+    sourseRoute: "/auth/forgot-password",
     buttonText: "Back",
-    route: "/deathresume/auth/login",
+    route: "/auth/login",
   },
 ];
 

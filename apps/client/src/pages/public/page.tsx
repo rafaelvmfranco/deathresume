@@ -119,6 +119,6 @@ export const publicLoader: LoaderFunction<ResumeDto> = async ({ params }) => {
 
     return resume;
   } catch (error) {
-    return redirect("/deathresume");
+    return redirect("/");
   }
 };

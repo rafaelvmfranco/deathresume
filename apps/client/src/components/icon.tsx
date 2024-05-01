@@ -9,7 +9,7 @@ type Props = {
 export const Icon = ({ size = 32, className }: Props) => {
   const { isDarkMode } = useTheme();
   
-  const srcForMode = isDarkMode ? "/deathresume/logo/logo-light.png" : "/deathresume/logo/logo-bright.png" 
+  const srcForMode = isDarkMode ? "src/assets/logos/logo-light.png" : "src/assets/logos/logo-bright.png" 
 
   return (
     <img
