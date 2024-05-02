@@ -8,6 +8,7 @@ export const configSchema = z.object({
 
   // Client URL (only for development environments)
   __DEV__CLIENT_URL: z.string().url().optional(),
+  __CLIENT_URL: z.string().url().optional(),
 
   // URLs
   PUBLIC_URL: z.string().url(),

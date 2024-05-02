@@ -48,7 +48,10 @@ async function bootstrap() {
   // CORS
   app.enableCors({
     credentials: true,
-    origin: process.env.NODE_ENV === "production",
+    origin: [
+      configService.get("__CLIENT_URL")!,
+      configService.get("__DEV__CLIENT_URL")!,
+    ],
   });
 
   // Helmet - enabled only in production
