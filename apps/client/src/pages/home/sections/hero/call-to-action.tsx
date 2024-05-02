@@ -15,7 +15,7 @@ export const HeroCTA = () => {
     return (
       <>
         <Button asChild size="lg">
-          <Link to="/dashboard">{t`Go to Dashboard`}</Link>
+          <Link to="/deathresume/client/dashboard">{t`Go to Dashboard`}</Link>
         </Button>
 
         <Button size="lg" variant="link" onClick={() => logout()}>

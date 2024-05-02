@@ -63,7 +63,7 @@ export const VerifyEmailPage = () => {
       </Alert>
 
       <Button asChild disabled={loading} className="w-full bg-reddish text-white uppercase px-12 py-2 rounded-md font-semibold text-lg no-underline">
-        <Link to="/dashboard">
+        <Link to="/deathresume/client/dashboard">
           {t`Go to Dashboard`}
         </Link>
       </Button>
