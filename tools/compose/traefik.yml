@@ -6,22 +6,6 @@ version: "3.8"
 # Note: Please change `example.com` to your domain name where necessary.
 
 services:
-  # Database (Postgres)
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -45,7 +29,6 @@ services:
     image: amruthpillai/reactive-resume:latest
     restart: unless-stopped
     depends_on:
-      - postgres
       - redis
       - chrome
     environment:
@@ -60,9 +43,6 @@ services:
       # -- Printer (Chrome) --
       CHROME_TOKEN: chrome_token
       CHROME_URL: ws://chrome:3000
-
-      # -- Database (Postgres) --
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
 
       # -- Auth --
       ACCESS_TOKEN_SECRET: access_token_secret
@@ -111,6 +91,3 @@ services:
       - 80:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
-volumes:
-  postgres_data:

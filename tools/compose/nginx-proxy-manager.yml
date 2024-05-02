@@ -4,22 +4,6 @@ version: "3.8"
 # There's very little configuration to be made on the compose file itself, and most of it is done on the Nginx Proxy Manager UI.
 
 services:
-  # Database (Postgres)
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -41,7 +25,6 @@ services:
     image: amruthpillai/reactive-resume:latest
     restart: unless-stopped
     depends_on:
-      - postgres
       - redis
       - chrome
     environment:
@@ -56,9 +39,6 @@ services:
       # -- Printer (Chrome) --
       CHROME_TOKEN: chrome_token
       CHROME_URL: wss://printer.example.com
-
-      # -- Database (Postgres) --
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
 
       # -- Auth --
       ACCESS_TOKEN_SECRET: access_token_secret
@@ -108,5 +88,4 @@ services:
 volumes:
   redis_data:
   nginx_data:
-  postgres_data:
   letsencrypt_data:
