@@ -5,27 +5,6 @@ version: "3.8"
 # docker network create --driver=overlay --attachable reactive_resume_network
 
 services:
-  # Database (Postgres)
-  postgres:
-    image: postgres:15-alpine
-    networks:
-      - reactive_resume_network
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-
   # Chrome Browser (for printing and previews)
   chrome:
     image: browserless/chrome:1.61.0-puppeteer-21.4.1
@@ -73,9 +52,6 @@ services:
       # -- Printer (Chrome) --
       CHROME_TOKEN: chrome_token
       CHROME_URL: wss://printer.example.com
-
-      # -- Database (Postgres) --
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
 
       # -- Auth --
       ACCESS_TOKEN_SECRET: access_token_secret
@@ -154,7 +130,6 @@ services:
 
 volumes:
   redis_data:
-  postgres_data:
   letsencrypt_data:
 
 networks:
