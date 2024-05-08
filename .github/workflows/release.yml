@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Check Commit Messages
         id: chech_step
         run: |
@@ -32,7 +32,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
           
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v2
