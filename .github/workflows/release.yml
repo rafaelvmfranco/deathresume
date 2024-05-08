@@ -45,10 +45,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: 
-            - ghcr.io/rafaelfranco/deathresume/server
-            - ghcr.io/rafaelfranco/deathresume/chrome
-            - ghcr.io/rafaelfranco/deathresume/redis
+          images: ghcr.io/rafaelfranco/deathresume/server,ghcr.io/rafaelfranco/deathresume/chrome,ghcr.io/rafaelfranco/deathresume/redis
           tags: |
             type=ref,event=branch
             type=raw,value=github-{{sha}}
