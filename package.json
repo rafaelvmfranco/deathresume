@@ -17,6 +17,8 @@
     "build": "nx run-many -t build",
     "build:client": "nx build client",
     "build:artboard": "nx build artboard",
+    "build:server": "nx build server",
+    "run:server": "nx serve server",
     "prestart": "pnpm prisma:migrate",
     "start": "node dist/apps/server/main",
     "lint": "nx run-many -t lint --fix",
