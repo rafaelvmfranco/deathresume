@@ -6,7 +6,6 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as Sentry from "@sentry/node";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
-import { PrismaService } from "nestjs-prisma";
 import { patchNestJsSwagger } from "nestjs-zod";
 
 import { AppModule } from "./app.module";
@@ -20,7 +19,6 @@ async function bootstrap() {
     logger: process.env.NODE_ENV === "development" ? ["debug"] : ["error", "warn", "log"],
   });
   const configService = app.get(ConfigService<Config>);
-  const prisma = app.get(PrismaService);
 
   // Sentry
   // Error Reporting and Performance Monitoring
@@ -36,7 +34,6 @@ async function bootstrap() {
       integrations: [
         new Sentry.Integrations.Http({ tracing: true }),
         new Sentry.Integrations.Express({ app: express }),
-        new Sentry.Integrations.Prisma({ client: prisma }),
         ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
       ],
     });

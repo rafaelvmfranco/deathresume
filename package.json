@@ -22,9 +22,6 @@
     "lint": "nx run-many -t lint --fix",
     "format": "pnpm exec prettier -w .",
     "crowdin:sync": "crowdin push && crowdin pull",
-    "prisma:generate": "pnpm exec prisma generate",
-    "prisma:migrate": "pnpm exec prisma migrate deploy",
-    "prisma:migrate:dev": "pnpm exec prisma migrate dev",
     "messages:extract": "pnpm exec lingui extract --clean --overwrite"
   },
   "devDependencies": {

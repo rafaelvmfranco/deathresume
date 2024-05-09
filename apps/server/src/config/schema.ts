@@ -14,9 +14,6 @@ export const configSchema = z.object({
   PUBLIC_URL: z.string().url(),
   STORAGE_URL: z.string().url(),
 
-  // Database (Prisma)
-  DATABASE_URL: z.string().url().startsWith("postgresql://"),
-
   // Authentication Secrets
   ACCESS_TOKEN_SECRET: z.string(),
   REFRESH_TOKEN_SECRET: z.string(),

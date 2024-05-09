@@ -9,7 +9,6 @@ import { AuthModule } from "./auth/auth.module";
 import { CacheModule } from "./cache/cache.module";
 import { ConfigModule } from "./config/config.module";
 import { ContributorsModule } from "./contributors/contributors.module";
-import { DatabaseModule } from "./database/database.module";
 import { FirebaseModule } from "./firebase/firebase.module";
 import { HealthModule } from "./health/health.module";
 import { MailModule } from "./mail/mail.module";
@@ -29,7 +28,6 @@ import { Config } from "./config/schema";
   imports: [
     // Core Modules
     ConfigModule,
-    DatabaseModule,
     FirebaseModule,
     MailModule,
     RavenModule,

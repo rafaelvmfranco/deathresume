@@ -5,7 +5,6 @@ import { PrinterModule } from "@/server/printer/printer.module";
 
 import { FirebaseModule } from "../firebase/firebase.module";
 import { ResumeController } from "./resume.controller";
-import { PrismaResumeService } from "./prisma-resume.service";
 import { ResumeService } from "./resume.service";
 import { UsageModule } from "../usage/usage.module";
 import { UsageService } from "../usage/usage.service";
@@ -13,7 +12,7 @@ import { UsageService } from "../usage/usage.service";
 @Module({
   imports: [AuthModule, PrinterModule, FirebaseModule, UsageModule],
   controllers: [ResumeController],
-  providers: [ResumeService, PrismaResumeService, UsageService],
+  providers: [ResumeService, UsageService],
   exports: [ResumeService],
 })
 export class ResumeModule {}
