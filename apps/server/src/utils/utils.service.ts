@@ -18,11 +18,14 @@ export class UtilsService {
   }
 
   getUrl(): string {
+    console.log("logggggg", this.configService.get("__DEV__CLIENT_URL"));
     const url =
       this.configService.get("NODE_ENV") === "production"
         ? this.configService.get("PUBLIC_URL")
         : this.configService.get("__DEV__CLIENT_URL");
 
+        
+        console.log(url);
     if (!url) {
       throw new InternalServerErrorException("No PUBLIC_URL or __DEV__CLIENT_URL was found.");
     }

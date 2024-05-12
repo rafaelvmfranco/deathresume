@@ -9,7 +9,11 @@ import { Config } from "../config/schema";
     RedisModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService<Config>) => ({
-        config: { url: configService.getOrThrow("REDIS_URL") },
+        config: {
+          url: configService.getOrThrow("IS_CONTAINER") == "true"
+            ? configService.getOrThrow("REDIS_URL")
+            : configService.getOrThrow("REDIS_URL"),
+        },
       }),
     }),
   ],

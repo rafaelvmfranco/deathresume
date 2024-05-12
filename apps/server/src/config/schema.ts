@@ -3,6 +3,8 @@ import { z } from "nestjs-zod/z";
 export const configSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]).default("production"),
 
+  IS_CONTAINER: z.string().default("false"),
+  
   // Ports
   PORT: z.coerce.number().default(3000),
 
@@ -42,7 +44,9 @@ export const configSchema = z.object({
     .transform((s) => s !== "false" && s !== "0"),
 
   // Redis
-  REDIS_URL: z.string().url().startsWith("redis://").optional(),
+  REDIS_URL: z.string().optional(),
+  REDIS_URL_CONTAINER: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
 
   // Sentry
   VITE_SENTRY_DSN: z.string().url().startsWith("https://").optional(),
