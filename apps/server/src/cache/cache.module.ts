@@ -11,7 +11,7 @@ import { Config } from "../config/schema";
       useFactory: async (configService: ConfigService<Config>) => ({
         config: {
           url: configService.getOrThrow("IS_CONTAINER") == "true"
-            ? configService.getOrThrow("REDIS_URL")
+            ? configService.getOrThrow("REDIS_URL_CONTAINER")
             : configService.getOrThrow("REDIS_URL"),
         },
       }),
