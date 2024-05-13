@@ -300,7 +300,6 @@ export class ResumeService {
   }
 
   async printPreview(resume: ResumeWithStrigifiedLayout) {
-    console.log("preview", resume?.data.metadata.layout);
     const parsedResume = this.parseResumeLayout(resume);
 
     return await this.printerService.printPreview(parsedResume);
