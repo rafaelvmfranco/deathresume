@@ -18,7 +18,6 @@ export class UtilsService {
   }
 
   getUrl(): string {
-    console.log("logggggg", this.configService.get("__DEV__CLIENT_URL"));
     const url =
       this.configService.get("NODE_ENV") === "production"
         ? this.configService.get("PUBLIC_URL")

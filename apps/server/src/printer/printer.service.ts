@@ -34,9 +34,7 @@ export class PrinterService {
 
   private async getBrowser() {
     try {
-      const browser = await puppeteer.launch({ headless: false });
-      const wsEndpoint = browser.wsEndpoint();
-      return await connect({ browserWSEndpoint: wsEndpoint });
+      return await connect({ browserWSEndpoint: this.browserURL });
     } catch (error) {
       throw new InternalServerErrorException(ErrorMessage.InvalidBrowserConnection, error.message);
     }
@@ -101,23 +99,27 @@ export class PrinterService {
   async generateResume(resume: ResumeDto) {
     try {
       const browser = await this.getBrowser();
+      Logger.log("browser", browser);
       const page = await browser.newPage();
+      Logger.log("browser", browser);
 
       let url = this.utils.getUrl();
+      Logger.log("url", url);
       const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
       const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
 
       if ([publicUrl, storageUrl].some((url) => url.includes("localhost"))) {
         // Switch client URL from `localhost` to `host.docker.internal` in development
         // This is required because the browser is running in a container and the client is running on the host machine.
-        url = url.replace("localhost", "0.0.0.0");
+        //url = url.replace("localhost", "0.0.0.0");
 
         await page.setRequestInterception(true);
 
         // Intercept requests of `localhost` to `host.docker.internal` in development
         page.on("request", (request) => {
           if (request.url().startsWith(storageUrl)) {
-            const modifiedUrl = request.url().replace("localhost", `0.0.0.0`);
+            const modifiedUrl = request.url().replace("localhost", `localhost`);
+            Logger.log("modifiedUrl", modifiedUrl);
 
             request.continue({ url: modifiedUrl });
           } else {
@@ -133,7 +135,9 @@ export class PrinterService {
         window.localStorage.setItem("resume", JSON.stringify(data));
       }, resume.data);
 
-      await page.goto(`${url}/artboard/preview`, { waitUntil: "networkidle0" });
+      Logger.log("start");
+      await page.goto(`${url}/deathresume/artboard/preview`, { waitUntil: "networkidle0" });
+      Logger.log("end");
 
       const pagesBuffer: Buffer[] = [];
 
