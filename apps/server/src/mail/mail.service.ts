@@ -12,10 +12,10 @@ export class MailService {
   ) {}
 
   async sendEmail(options: ISendMailOptions) {
-    const smtpUrl = this.configService.get("SMTP_URL");
+    const isProduction = this.configService.get("NODE_ENV") === "production";
 
-    // If `SMTP_URL` is not set, log the email to the console
-    if (!smtpUrl) {
+    // If `NODE_ENV = development` is not set, log the email to the console
+    if (!isProduction) {
       return Logger.log(options, "MailService#sendEmail");
     }
 

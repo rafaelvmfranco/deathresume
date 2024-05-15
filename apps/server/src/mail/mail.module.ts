@@ -7,26 +7,34 @@ import { Config } from "@/server/config/schema";
 
 import { MailService } from "./mail.service";
 
-const emptyTransporter = nodemailer.createTransport({});
-
 @Module({
   imports: [
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService<Config>) => {
         const from = configService.get("MAIL_FROM");
-        const smtpUrl = configService.get("SMTP_URL");
+        const isProduction = configService.get("NODE_ENV") === "production";
 
-        if (!smtpUrl) {
+        if (!isProduction) {
           Logger.warn(
-            "Since `SMTP_URL` is not set, emails would be logged to the console instead. This is not recommended for production environments.",
+            "In NODE_ENV = development, emails would be logged to the console instead. This is not recommended for production environments.",
             "MailModule",
           );
         }
 
         return {
           defaults: { from },
-          transport: smtpUrl || emptyTransporter,
+          transport: {
+            host: configService.get("SMTP_SERVER"),
+            port: configService.get("SMTP_PORT"),
+            secure: false,
+            ignoreTLS: true,
+            logger: !isProduction,
+            auth: {
+              user: configService.get("SMTP_USER"),
+              pass: configService.get("SMTP_KEY"),
+            },
+          },
         };
       },
     }),
@@ -34,4 +42,4 @@ const emptyTransporter = nodemailer.createTransport({});
   providers: [MailService],
   exports: [MailService],
 })
-export class MailModule {}
+export class MailModule { }

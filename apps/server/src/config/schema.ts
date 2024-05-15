@@ -24,7 +24,10 @@ export const configSchema = z.object({
 
   // Mail Server
   MAIL_FROM: z.string().includes("@").optional().default("noreply@localhost"),
-  SMTP_URL: z.string().url().startsWith("smtp://").optional(),
+  SMTP_SERVER: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_KEY: z.string().optional(),
 
   // Storage
   STORAGE_BUCKET: z.string(),
@@ -62,6 +65,9 @@ export const configSchema = z.object({
   CLIENT_STRIPE_CUSTOMER_PORTAL_URL: z.string().url().optional(),
   STRIPE_CREATE_SUCCESS_URL: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
+  // Fly.io
+  FLY_API_TOKEN: z.string().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;

@@ -45,7 +45,10 @@ services:
 
       # -- Emails --
       MAIL_FROM: noreply@example.com
-      # SMTP_URL: smtp://user:pass@smtp:587 # Optional
+      SMTP_SERVER: smtp-relay.brevo.com
+      SMTP_PORT: 587
+      SMTP_USER: email
+      SMTP_KEY: secret_key
 
       # -- Cache (Redis) --
       REDIS_URL: redis://default:password@redis:6379

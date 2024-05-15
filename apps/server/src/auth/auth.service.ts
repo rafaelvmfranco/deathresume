@@ -211,7 +211,7 @@ export class AuthService {
         secrets: { update: { verificationToken: token } },
       });
 
-      const url = `${this.utils.getUrl()}/auth/verify-email?token=${token}`;
+      const url = `${this.utils.getUrl()}/deathresume/client/auth/verify-email?token=${token}`;
       const subject = "Verify your email address";
       const text = `Please verify your email address by clicking on the link below:\n\n${url}`;
 
