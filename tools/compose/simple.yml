@@ -36,7 +36,6 @@ services:
 
       # -- URLs --
       PUBLIC_URL: http://localhost:3000
-      STORAGE_URL: http://localhost:9000
 
       # -- Printer (Chrome) --
       CHROME_TOKEN: chrome_token

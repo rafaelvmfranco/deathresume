@@ -34,7 +34,6 @@ services:
 
       # -- URLs --
       PUBLIC_URL: https://example.com
-      STORAGE_URL: https://storage.example.com
 
       # -- Printer (Chrome) --
       CHROME_TOKEN: chrome_token

@@ -13,7 +13,6 @@ export const configSchema = z.object({
 
   // URLs
   PUBLIC_URL: z.string().url(),
-  STORAGE_URL: z.string().url(),
 
   // Authentication Secrets
   ACCESS_TOKEN_SECRET: z.string(),

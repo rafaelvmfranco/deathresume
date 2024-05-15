@@ -219,7 +219,7 @@ export class PrinterService {
 
     let url = this.utils.getUrl();
     const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
-    const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
+
     if (publicUrl.includes("localhost")) {
       // Switch client URL from `localhost` to `host.docker.internal` in development
       // This is required because the browser is running in a container and the client is running on the host machine.
