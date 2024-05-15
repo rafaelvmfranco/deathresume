@@ -28,20 +28,7 @@ export const configSchema = z.object({
   SMTP_URL: z.string().url().startsWith("smtp://").optional(),
 
   // Storage
-  STORAGE_ENDPOINT: z.string(),
-  STORAGE_PORT: z.coerce.number(),
-  STORAGE_REGION: z.string().default("us-east-1"),
   STORAGE_BUCKET: z.string(),
-  STORAGE_ACCESS_KEY: z.string(),
-  STORAGE_SECRET_KEY: z.string(),
-  STORAGE_USE_SSL: z
-    .string()
-    .default("false")
-    .transform((s) => s !== "false" && s !== "0"),
-  STORAGE_SKIP_CREATE_BUCKET: z
-    .string()
-    .default("false")
-    .transform((s) => s !== "false" && s !== "0"),
 
   // Redis
   REDIS_URL: z.string().optional(),

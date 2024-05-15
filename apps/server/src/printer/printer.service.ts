@@ -106,19 +106,18 @@ export class PrinterService {
       let url = this.utils.getUrl();
       Logger.log("url", url);
       const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
-      const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
 
-      if ([publicUrl, storageUrl].some((url) => url.includes("localhost"))) {
+      if (publicUrl.includes("localhost")) {
         // Switch client URL from `localhost` to `host.docker.internal` in development
         // This is required because the browser is running in a container and the client is running on the host machine.
-        //url = url.replace("localhost", "0.0.0.0");
+        url = url.replace("localhost", "172.17.0.1");
 
         await page.setRequestInterception(true);
 
         // Intercept requests of `localhost` to `host.docker.internal` in development
         page.on("request", (request) => {
-          if (request.url().startsWith(storageUrl)) {
-            const modifiedUrl = request.url().replace("localhost", `localhost`);
+          if (request.url().startsWith(publicUrl)) {
+            const modifiedUrl = request.url().replace("localhost", `172.17.0.1`);
             Logger.log("modifiedUrl", modifiedUrl);
 
             request.continue({ url: modifiedUrl });
@@ -136,7 +135,7 @@ export class PrinterService {
       }, resume.data);
 
       Logger.log("start");
-      await page.goto(`${url}/deathresume/artboard/preview`, { waitUntil: "networkidle0" });
+      await page.goto(`${url}/artboard/preview`, { waitUntil: "networkidle0" });
       Logger.log("end");
 
       const pagesBuffer: Buffer[] = [];
@@ -221,17 +220,17 @@ export class PrinterService {
     let url = this.utils.getUrl();
     const publicUrl = this.configService.getOrThrow<string>("PUBLIC_URL");
     const storageUrl = this.configService.getOrThrow<string>("STORAGE_URL");
-    if ([publicUrl, storageUrl].some((url) => url.includes("localhost"))) {
+    if (publicUrl.includes("localhost")) {
       // Switch client URL from `localhost` to `host.docker.internal` in development
       // This is required because the browser is running in a container and the client is running on the host machine.
-      url = url.replace("localhost", "0.0.0.0");
+      url = url.replace("localhost", "172.17.0.1");
 
       await page.setRequestInterception(true);
 
       // Intercept requests of `localhost` to `host.docker.internal` in development
       page.on("request", (request) => {
-        if (request.url().startsWith(storageUrl)) {
-          const modifiedUrl = request.url().replace("localhost", `0.0.0.0`);
+        if (request.url().startsWith(publicUrl)) {
+          const modifiedUrl = request.url().replace("localhost", "172.17.0.1");
           request.continue({ url: modifiedUrl });
 
         } else {
