@@ -8,7 +8,7 @@ RUN npm install -g pnpm@8.11.0
 COPY . .
 RUN ls
 
-RUN pnpm install --production
+RUN pnpm install
 RUN pnpm build:server
 
 
@@ -19,7 +19,6 @@ COPY --from=builder /app/dist/apps/server ./dist
 COPY --from=builder /app/node_modules ./node_modules
 
 ENV NODE_ENV=production
-ENV PORT=3000
 
 EXPOSE $PORT
 

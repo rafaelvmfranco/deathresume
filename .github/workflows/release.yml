@@ -39,7 +39,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@master
 
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: rafaelfranco
@@ -47,7 +47,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/rafaelfranco/deathresume/server,ghcr.io/rafaelfranco/deathresume/chrome,ghcr.io/rafaelfranco/deathresume/redis
           tags: |
