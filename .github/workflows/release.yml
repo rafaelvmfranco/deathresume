@@ -87,14 +87,14 @@ jobs:
           cache-to: type=gha,mode=max
       
       - name: Build and push docker image for Redis
-          uses: docker/build-push-action@v4
-          with:
-            context: .
-            file: ./release/redis/Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            provenance: false
-            push: true
-            tags: ${{ steps.meta.outputs.tags }}
-            cache-from: type=gha
-            cache-to: type=gha,mode=max
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./release/redis/Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          provenance: false
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       
