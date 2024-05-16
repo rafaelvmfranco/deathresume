@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { User as UserEntity } from "@prisma/client";
+import { UserDto } from "@reactive-resume/dto";
 import { UpdateUsageDto } from "@reactive-resume/dto";
 import { User } from "@/server/user/decorators/user.decorator";
 import { TwoFactorGuard } from "../auth/guards/two-factor.guard";
@@ -13,26 +13,26 @@ export class UsageController {
 
   @Get()
   @UseGuards(TwoFactorGuard)
-  async findByUser(@User() user: UserEntity) {
+  async findByUser(@User() user: UserDto) {
     return await this.usageService.findOneByUserId(user.id);
   }
 
   @Post()
   @UseGuards(TwoFactorGuard)
-  async create(@User() user: UserEntity) {
+  async create(@User() user: UserDto) {
     return await this.usageService.create(user.id);
   }
 
   @Patch()
   @UseGuards(TwoFactorGuard)
-  async changeFieldNumber(@User() user: UserEntity, @Body() updateDto: UpdateUsageDto) {
+  async changeFieldNumber(@User() user: UserDto, @Body() updateDto: UpdateUsageDto) {
     if (updateDto.field === "alWords") return await this.usageService.addAlWords(user.id, updateDto.value);
     return await this.usageService.changeFieldByNumberBy1(user.id, updateDto);
   }
 
   @Delete()
   @UseGuards(TwoFactorGuard)
-  async remove(@User() user: UserEntity) {
+  async remove(@User() user: UserDto) {
     return await this.usageService.deleteByUserId(user.id);
   }
 }

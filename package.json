@@ -18,7 +18,6 @@
     "build:artboard": "nx build artboard",
     "build:server": "nx build server",
     "run:server": "nx serve server",
-    "prestart": "pnpm prisma:migrate",
     "start": "node dist/apps/server/main",
     "lint": "nx run-many -t lint --fix",
     "format": "pnpm exec prettier -w .",
@@ -137,7 +136,6 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@pdf-lib/fontkit": "^1.1.1",
     "@phosphor-icons/react": "^2.0.15",
-    "@prisma/client": "^5.6.0",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -198,10 +196,7 @@
     "lodash.debounce": "^4.0.8",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
-    "minio": "^7.1.3",
     "nest-raven": "^10.0.1",
-    "nestjs-minio-client": "^2.2.0",
-    "nestjs-prisma": "^0.22.0",
     "nestjs-zod": "^3.0.0",
     "nodemailer": "^6.9.7",
     "openai": "^4.20.1",
@@ -213,7 +208,6 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pdf-lib": "^1.17.1",
-    "prisma": "^5.6.0",
     "puppeteer": "^21.4.1",
     "qrcode.react": "^3.1.0",
     "react": "18.2.0",
@@ -244,8 +238,5 @@
   "packageManager": "pnpm@8.11.0",
   "engines": {
     "node": ">=18.0.0"
-  },
-  "prisma": {
-    "schema": "tools/prisma/schema.prisma"
   }
 }

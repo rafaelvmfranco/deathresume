@@ -1,4 +1,4 @@
-import { Resume, User } from "@prisma/client";
+import { ResumeDto, UserDto } from "@reactive-resume/dto";
 
 declare global {
   namespace Express {

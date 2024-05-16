@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { AuthProvidersDto, LoginDto, RegisterDto, UserWithSecrets } from "@reactive-resume/dto";
 import { ErrorMessage } from "@reactive-resume/utils";
 import * as bcryptjs from "bcryptjs";
@@ -114,9 +113,9 @@ export class AuthService {
 
       return user as UserWithSecrets;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new BadRequestException(ErrorMessage.UserAlreadyExists);
-      }
+      // if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+      //   throw new BadRequestException(ErrorMessage.UserAlreadyExists);
+      // }
 
       Logger.error(error);
       throw new InternalServerErrorException(error);

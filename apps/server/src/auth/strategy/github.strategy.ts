@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { User } from "@prisma/client";
 import { processUsername } from "@reactive-resume/utils";
 import { ErrorMessage } from "@reactive-resume/utils";
 import { Profile, Strategy, StrategyOptions } from "passport-github2";
@@ -30,7 +29,7 @@ export class GitHubStrategy extends PassportStrategy(Strategy, "github") {
     const email = emails?.[0].value ?? `${username}@github.com`;
     const picture = photos?.[0].value;
 
-    let user: User | null = null;
+    let user: UserDto | null = null;
 
     if (!email) throw new BadRequestException();
 
