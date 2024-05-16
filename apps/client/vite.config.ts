@@ -17,7 +17,7 @@ export default defineConfig({
 
   define: {
     appVersion: JSON.stringify(process.env.npm_package_version),
-    openAIKey: JSON.stringify(process.env.__CLIENT_OPENAI_KEY),
+    openAIKey: JSON.stringify(process.env.CLIENT_OPENAI_KEY),
     stripeCustomerPortalUrl: JSON.stringify(process.env.CLIENT_STRIPE_CUSTOMER_PORTAL_URL),
   },
 
