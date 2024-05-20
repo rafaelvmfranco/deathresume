@@ -49,7 +49,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/rafaelfranco/deathresume/server,ghcr.io/rafaelfranco/deathresume/chrome,ghcr.io/rafaelfranco/deathresume/redis
+          images: ghcr.io/rafaelfranco/deathresume/server
           tags: |
             type=ref,event=branch
             type=raw,value=github-{{sha}}
@@ -67,30 +67,6 @@ jobs:
         with:
           context: .
           file: ./apps/server/Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
-          provenance: false
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push docker image for Chrome
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./release/browserless-chrome/Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
-          provenance: false
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      
-      - name: Build and push docker image for Redis
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./release/redis/Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           provenance: false
           push: true
